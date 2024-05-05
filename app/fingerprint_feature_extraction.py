@@ -1,3 +1,6 @@
+import encrypt
+import test_db_actions as database
+
 from cgi import print_form
 from pickletools import float8
 import numpy as np
@@ -386,4 +389,7 @@ for i in range(len(files)):
         fingercode_images.append(fingercode_image)
        
     #filtered_images = np.array(filtered_images, dtype=np.uint8)   
-    display_images(fingercode_images)   
+    #display_images(fingercode_images)   
+    
+    fingercode_encrypted = encrypt.enc_feature_vector(fingercode_images[0][0])
+    database.insert_into_table(fingercode_encrypted)
