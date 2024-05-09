@@ -1,0 +1,7 @@
+
+.env
+/app/db
+/__pycache__
+/app/__pycache__
+app/public.txt
+app/secret.txt
