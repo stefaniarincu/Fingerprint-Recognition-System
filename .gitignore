@@ -5,3 +5,4 @@
 /app/__pycache__
 app/public.txt
 app/secret.txt
+/app/website/__pycache__
