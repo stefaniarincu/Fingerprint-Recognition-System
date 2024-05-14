@@ -1,10 +1,6 @@
 
 .env
 /app/db
-/__pycache__
-/app/__pycache__
 app/public.txt
 app/secret.txt
 /app/website/__pycache__
-public.txt
-secret.txt
