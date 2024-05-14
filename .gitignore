@@ -6,3 +6,5 @@
 app/public.txt
 app/secret.txt
 /app/website/__pycache__
+public.txt
+secret.txt

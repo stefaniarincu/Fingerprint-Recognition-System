@@ -24,7 +24,7 @@ def upload_image():
         img = cv2.imdecode(np.fromstring(image.read(), np.uint8), cv2.IMREAD_GRAYSCALE)
 
         processed_img = process_image(img)
-        fingerprint_data = encrypt.enc_feature_vector(processed_img[0][0])
+        fingerprint_data = encrypt.ecrypt_fingercode(processed_img[0][0])
 
         match_found = search_in_table(fingerprint_data)
 

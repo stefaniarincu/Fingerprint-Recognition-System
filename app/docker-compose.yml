@@ -12,3 +12,7 @@ services:
     volumes:
       - ./db:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/create_table.sql
+    deploy:
+      resources:
+        limits:
+          memory: 15G

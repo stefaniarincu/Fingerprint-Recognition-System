@@ -62,3 +62,14 @@ def test_inserted():
 
     end_connection(conn, cursor)
 
+def test_select_all():
+    conn, cursor = set_connection()
+    
+    cursor.execute("SELECT * FROM FINGERPRINT;")
+    datapoints = cursor.fetchall()
+    print(len(datapoints))
+    
+    end_connection(conn, cursor)
+
+test_select_all()
+

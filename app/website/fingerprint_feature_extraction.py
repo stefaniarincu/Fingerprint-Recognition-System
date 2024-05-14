@@ -382,6 +382,6 @@ def process_image(img):
     #filtered_images = np.array(filtered_images, dtype=np.uint8)   
     #display_images(fingercode_images)  
     
-    fingercodes_encrypted = [encrypt.enc_feature_vector(fingercode) for fingercode in fingercodes]
+    fingercodes_encrypted = [encrypt.ecrypt_fingercode(fingercode) for fingercode in fingercodes]
     
     return fingercodes_encrypted
