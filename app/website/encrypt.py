@@ -1,5 +1,4 @@
 import tenseal as ts
-import numpy as np
 import base64
 import os
 from dotenv import load_dotenv
@@ -42,80 +41,37 @@ def generate_context():
 
 def ecrypt_fingercode(feature_vector):
     generate_context()
-    secret_filename = os.getenv("SECRET_CONTEXT_FILE")
 
-    context = ts.context_from(read_data(secret_filename))
+    context = ts.context_from(read_data(os.getenv("SECRET_CONTEXT_FILE")))
 
     enc_fingercode = ts.ckks_vector(context, feature_vector)
     enc_fingercode_proto = enc_fingercode.serialize()
 
     return enc_fingercode_proto
 
-def calculate_euclidean_dist(enc_fingercode_1, enc_fingercode_2):
+def apply_threshold(euclidean_dist, threshold=100):
+    if euclidean_dist < 100:
+        return 1
+    else:
+        return 0
+
+def calculate_euclidean_dist(fingercode_1, fingercode_2):
+    generate_context()
+
+    context = ts.context_from(read_data(os.getenv("PUBLIC_CONTEXT_FILE")))
+
+    enc_fingercode_1 = ts.lazy_ckks_vector_from(fingercode_1)
+    enc_fingercode_1.link_context(context)
+
+    enc_fingercode_2 = ts.lazy_ckks_vector_from(fingercode_2)
+    enc_fingercode_2.link_context(context)
+
     euclidean_dist = enc_fingercode_1 - enc_fingercode_2
     euclidean_dist = euclidean_dist.dot(euclidean_dist)
 
-'''
-context = ts.context(ts.SCHEME_TYPE.CKKS, poly_modulus_degree = 8192, coeff_mod_bit_sizes = [60, 40, 40, 60])
-    context.generate_galois_keys()
-    context.global_scale = 2**40
+    context = ts.context_from(read_data(os.getenv("SECRET_CONTEXT_FILE")))
+    euclidean_dist.link_context(context)
 
-    secret_context = context.serialize(save_secret_key = True)
-    write_data("secret.txt", secret_context)
+    euclidean_dist_plain = euclidean_dist.decrypt()[0]
 
-    context.make_context_public() #drop the secret_key from the context
-    public_context = context.serialize()
-    write_data("public.txt", public_context)
-
-    context = ts.context_from(read_data("secret.txt"))
-
-    enc_v1 = ts.ckks_vector(context, img1_embedding)
-    enc_v2 = ts.ckks_vector(context, img2_embedding)
-
-    enc_v1_proto = enc_v1.serialize()
-    enc_v2_proto = enc_v2.serialize()
-
-    write_data("enc_v1.txt", enc_v1_proto)
-    write_data("enc_v2.txt", enc_v2_proto)
-
-    #cloud system will have the public key
-    context = ts.context_from(read_data("public.txt"))
-
-    #restore the embedding of person 1
-    enc_v1_proto = read_data("enc_v1.txt")
-    enc_v1 = ts.lazy_ckks_vector_from(enc_v1_proto)
-    enc_v1.link_context(context)
-
-    #restore the embedding of person 2
-    enc_v2_proto = read_data("enc_v2.txt")
-    enc_v2 = ts.lazy_ckks_vector_from(enc_v2_proto)
-    enc_v2.link_context(context)
-
-    #euclidean distance
-    euclidean_squared = enc_v1 - enc_v2
-    euclidean_squared = euclidean_squared.dot(euclidean_squared)
-
-    #store the homomorphic encrypted squared euclidean distance
-    write_data("euclidean_squared.txt", euclidean_squared.serialize())
-
-    try:
-        euclidean_squared.decrypt()
-    except Exception as err:
-        print("Exception: ", str(err))
-
-        #client has the secret key
-    context = ts.context_from(read_data("secret.txt"))
-
-    #load euclidean squared value
-    euclidean_squared_proto = read_data("euclidean_squared.txt")
-    euclidean_squared = ts.lazy_ckks_vector_from(euclidean_squared_proto)
-    euclidean_squared.link_context(context)
-
-    #decrypt it
-    euclidean_squared_plain = euclidean_squared.decrypt()[0]
-
-    if euclidean_squared_plain < 100:
-        print("they are same person")
-    else:
-        print("they are different persons")
-'''
+    return euclidean_dist_plain

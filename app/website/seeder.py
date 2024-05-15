@@ -4,6 +4,7 @@ import cv2 as cv
 from fingerprint_feature_extraction import process_image
 import psycopg2
 from dotenv import load_dotenv
+import encrypt
 
 load_dotenv()
 
@@ -27,16 +28,21 @@ director_path = "D:/Licenta/74034_3_En_4_MOESM1_ESM/FVC2004/Dbs/DB1_A"
 image_extension = '*.tif'
 
 images_path = os.path.join(director_path, image_extension)
-files = glob.glob(images_path)
+#trebuie vazut daca apar ordonate sau nu
+files = sorted(glob.glob(images_path))
+
+cnt = 0
 
 for i in range(len(files)):
     print('Procesare imagine nr. %d...' % i)
     img = cv.imread(files[i], cv.IMREAD_GRAYSCALE)
 
-    encrypted_fingerprints = process_image(img)
+    encrypted_fingerprints, fingercodes = process_image(img)
 
     for enc_fingerprint in encrypted_fingerprints:
-        insert_into_table(i, enc_fingerprint)
+        insert_into_table(cnt, enc_fingerprint)
+       
+        cnt += 1
 
 cursor.close()
 conn.close()

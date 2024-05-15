@@ -384,4 +384,4 @@ def process_image(img):
     
     fingercodes_encrypted = [encrypt.ecrypt_fingercode(fingercode) for fingercode in fingercodes]
     
-    return fingercodes_encrypted
+    return fingercodes_encrypted, fingercodes
