@@ -41,7 +41,14 @@ for i in range(len(files)):
 
     for enc_fingerprint in encrypted_fingerprints:
         insert_into_table(cnt, enc_fingerprint)
-       
+
+        if cnt == 0:
+            encrypt.write_data("nume1.txt", enc_fingerprint)
+            print(files[i])
+
+            enc2 = encrypt.ecrypt_fingercode(fingercodes[0])
+            encrypt.write_data("nume2.txt", enc2)
+
         cnt += 1
 
 cursor.close()

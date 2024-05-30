@@ -22,10 +22,11 @@ h_roi = 10 + 2 * ((nr_bands + 1) * band_width) - 1 #ca sa fie impar => mijlocul 
 
 
 def find_reference_point(param_img):
-    grid_x, grid_y = np.meshgrid(np.arange(-16, 17), np.arange(-16, 17))
-    
-    exponent = np.exp(-(grid_x ** 2 + grid_y ** 2) / (2 * np.sqrt(55) ** 2))
-    core_filter = exponent * (grid_x + 1j * grid_y)
+    block_size = 8    
+    variance_thresh = 20
+    k_size_close = 10
+    k_size_erode = 44
+    num_rows, num_cols = param_img.shape
 
     param_img = param_img.astype(complex)
     gradient_x, gradient_y = np.gradient(param_img)
@@ -38,11 +39,10 @@ def find_reference_point(param_img):
             if denominator[i][j] != 0:
                 grad_field[i][j] = nominator[i][j] / denominator[i][j]
 
-    block_size = 8    
-    variance_thresh = 20
-    k_size_close = 10
-    k_size_erode = 44
-    num_rows, num_cols = param_img.shape
+    grid_x, grid_y = np.meshgrid(np.arange(-16, 17), np.arange(-16, 17))
+    
+    exponent = np.exp(-(grid_x ** 2 + grid_y ** 2) / (2 * np.sqrt(55) ** 2))
+    core_filter = exponent * (grid_x + 1j * grid_y)
 
     mirrored = np.pad(grad_field.copy(), ((20, 20), (20, 20)), mode='reflect')
     image_filtered = convolve2d(mirrored, core_filter, mode='same')
@@ -68,9 +68,7 @@ def find_reference_point(param_img):
     
     mask = image_filtered * mask_variance
 
-    max_line = np.max(mask, axis=0)
-    x_center = np.argmax(max_line)
-    y_center = np.argmax(mask, axis=0)[x_center]
+    y_center, x_center = np.unravel_index(np.argmax(mask), mask.shape)
 
     return x_center, y_center
 
@@ -79,10 +77,7 @@ def crop_roi(param_h_roi, param_x_center, param_y_center, param_img):
     img_height, img_width  = param_img.shape
 
     if (param_y_center - param_h_roi//2 < 0) or (param_y_center + param_h_roi//2 > img_height - 1) or (param_x_center - param_h_roi//2 < 0) or (param_x_center + param_h_roi//2 > img_width - 1):
-        padded_img = np.ones((img_height + 2*param_h_roi, img_width + 2*param_h_roi), dtype=np.uint8) * 255
-        padded_img[param_h_roi:param_h_roi+img_height, param_h_roi:param_h_roi+img_width] = param_img
-        cropped_roi = padded_img[param_y_center - param_h_roi//2 + param_h_roi : param_y_center + param_h_roi//2 + param_h_roi,
-                       param_x_center - param_h_roi//2 + param_h_roi : param_x_center + param_h_roi//2 + param_h_roi]
+        return np.array([])
     else:
         cropped_roi = param_img[param_y_center - param_h_roi//2 : param_y_center + param_h_roi//2 + 1,
                        param_x_center - param_h_roi//2 : param_x_center + param_h_roi//2 + 1]
@@ -176,19 +171,6 @@ def plot_sectors(param_points_each_sector, param_h_roi, param_nr_bands, param_nr
     
 
     fig, axs = plt.subplots(1, 5, figsize=(15, 15))
-    '''
-    for i in range(len(param_points_each_sector)):
-        image = np.ones((param_h_roi, param_h_roi), dtype=np.uint8)   
-        image = cv.cvtColor(image, cv.COLOR_GRAY2RGB)
-        for idx in param_points_each_sector[i]:
-           image[idx[0], idx[1]] = np.array([255, 255, 255])  # White
-            
-        images.append(image)
-    
-
-    fig, axs = plt.subplots(10, 8, figsize=(15, 15))
-    '''
-
     axs = axs.flatten()
 
     for i, ax in enumerate(axs):
@@ -229,6 +211,7 @@ def plot_circles_and_lines(param_h_roi, param_nr_sectors, param_band_width, para
     ax.set_ylim(0, param_h_roi)
     ax.set_aspect('equal', adjustable='box')
     plt.show()
+
 
 def normalize_sectors(param_points_each_sector, param_cropped_roi, target_mean=100.0, target_variance=100.0):
     mean_each_sector = np.zeros(len(param_points_each_sector))
@@ -355,33 +338,34 @@ def process_image(img):
     
     cropped_roi = crop_roi(h_roi, x_center, y_center, img)
 
-    points_each_sector = divide_into_sectors(h_roi, nr_sectors, band_width, nr_sectors_band)
-    #plot_sectors(points_each_sector, h_roi, nr_bands, nr_sectors_band)
-    #plot_circles_and_lines(h_roi, nr_sectors, band_width, nr_sectors_band)
+    if cropped_roi.shape[0] != 0:
+        points_each_sector = divide_into_sectors(h_roi, nr_sectors, band_width, nr_sectors_band)
+        #plot_sectors(points_each_sector, h_roi, nr_bands, nr_sectors_band)
+        #plot_circles_and_lines(h_roi, nr_sectors, band_width, nr_sectors_band)
 
-    norm_cropped_roi = normalize_sectors(points_each_sector, cropped_roi)
+        norm_cropped_roi = normalize_sectors(points_each_sector, cropped_roi)
 
-    # pt criptare
-    fingercodes = []
-    filtered_images = []
-    # ca sa pot vedea cum arata imaginea
-    fingercode_images = []
+        # pt criptare
+        fingercodes = []
+        filtered_images = []
+        # ca sa pot vedea cum arata imaginea
+        fingercode_images = []
 
-    for idx in range(nr_filters):
-        gabor_filter = get_gabor_filter(idx, nr_filters)
+        for idx in range(nr_filters):
+            gabor_filter = get_gabor_filter(idx, nr_filters)
+            
+            filtered_roi = conv2fft(norm_cropped_roi.copy(), gabor_filter)
+            filtered_images.append(filtered_roi)
+            
+            fingercode = determine_fingercode(filtered_roi, points_each_sector)
+            fingercodes.append(fingercode)
+            
+            fingercode_image = create_fingercode_image(filtered_roi, fingercode, points_each_sector)
+            fingercode_images.append(fingercode_image)
         
-        filtered_roi = conv2fft(norm_cropped_roi.copy(), gabor_filter)
-        filtered_images.append(filtered_roi)
+        #filtered_images = np.array(filtered_images, dtype=np.uint8)   
+        #display_images(fingercode_images)  
         
-        fingercode = determine_fingercode(filtered_roi, points_each_sector)
-        fingercodes.append(fingercode)
+        fingercodes_encrypted = [encrypt.ecrypt_fingercode(fingercode) for fingercode in fingercodes]
         
-        fingercode_image = create_fingercode_image(filtered_roi, fingercode, points_each_sector)
-        fingercode_images.append(fingercode_image)
-    
-    #filtered_images = np.array(filtered_images, dtype=np.uint8)   
-    #display_images(fingercode_images)  
-    
-    fingercodes_encrypted = [encrypt.ecrypt_fingercode(fingercode) for fingercode in fingercodes]
-    
-    return fingercodes_encrypted, fingercodes
+        return fingercodes_encrypted, fingercodes

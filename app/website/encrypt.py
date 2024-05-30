@@ -30,6 +30,7 @@ def generate_context():
 
     if not os.path.exists(secret_filename) or os.path.getsize(secret_filename) == 0:
         write_data(secret_filename, secret_context)
+        print("1")
 
     public_context = context.serialize()
 
@@ -38,6 +39,7 @@ def generate_context():
 
     if not os.path.exists(public_filename) or os.path.getsize(public_filename) == 0:
         write_data(public_filename, public_context)
+        print("2")
 
 def ecrypt_fingercode(feature_vector):
     generate_context()
