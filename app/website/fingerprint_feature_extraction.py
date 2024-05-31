@@ -16,7 +16,7 @@ from matplotlib.patches import Circle
 nr_filters = 8
 nr_bands = 5
 nr_sectors_band = 16 #k
-band_width = 20 #b
+band_width = 15 #b
 nr_sectors = nr_bands * nr_sectors_band
 h_roi = 10 + 2 * ((nr_bands + 1) * band_width) - 1 #ca sa fie impar => mijlocul e centrul
 
@@ -69,7 +69,6 @@ def find_reference_point(param_img):
     mask = image_filtered * mask_variance
 
     y_center, x_center = np.unravel_index(np.argmax(mask), mask.shape)
-
     return x_center, y_center
 
 
@@ -79,21 +78,8 @@ def crop_roi(param_h_roi, param_x_center, param_y_center, param_img):
     if (param_y_center - param_h_roi//2 < 0) or (param_y_center + param_h_roi//2 > img_height - 1) or (param_x_center - param_h_roi//2 < 0) or (param_x_center + param_h_roi//2 > img_width - 1):
         return np.array([])
     else:
-        cropped_roi = param_img[param_y_center - param_h_roi//2 : param_y_center + param_h_roi//2 + 1,
+        return param_img[param_y_center - param_h_roi//2 : param_y_center + param_h_roi//2 + 1,
                        param_x_center - param_h_roi//2 : param_x_center + param_h_roi//2 + 1]
-
-    return cropped_roi
-
-
-def display_center_point(img, x_center, y_center):
-    plt.imshow(img, cmap='gray')
-    plt.scatter(x_center, y_center, c='yellow', marker='x', label='Center Point')
-    
-    plt.title('Fingerprint with Center Point')
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.legend()
-    plt.show()
 
 
 def divide_into_sectors(param_h_roi, param_nr_sectors, param_band_width, param_nr_sectors_band):
@@ -133,90 +119,12 @@ def divide_into_sectors(param_h_roi, param_nr_sectors, param_band_width, param_n
     
     return sectors
 
-def plot_sectors(param_points_each_sector, param_h_roi, param_nr_bands, param_nr_sectors_band):
-    images = []
-    
-    colors_rgb = [
-        np.array([255, 0, 0]),     # Red
-        np.array([0, 255, 0]),     # Green
-        np.array([0, 0, 255]),     # Blue
-        np.array([255, 255, 0]),   # Yellow
-        np.array([255, 0, 255]),   # Magenta
-        np.array([0, 255, 255]),   # Cyan
-        np.array([128, 0, 0]),     # Maroon
-        np.array([0, 128, 0]),     # Dark Green
-        np.array([0, 0, 128]),     # Navy
-        np.array([128, 128, 0]),   # Olive
-        np.array([128, 0, 128]),   # Purple
-        np.array([0, 128, 128]),   # Teal
-        np.array([255, 165, 0]),   # Orange
-        np.array([255, 192, 203]), # Pink
-        np.array([128, 128, 128]), # Gray
-        np.array([255, 255, 255])  # White
-    ]
-
-    cnt = 0
-
-    for i in range(param_nr_bands):
-        image = np.ones((param_h_roi, param_h_roi), dtype=np.uint8)   
-        image = cv.cvtColor(image, cv.COLOR_GRAY2RGB) 
-
-        for j in range(param_nr_sectors_band):
-            for idx in param_points_each_sector[cnt]:
-                image[idx[0], idx[1]] = colors_rgb[j]
-        
-            cnt += 1
-            
-        images.append(image)
-    
-
-    fig, axs = plt.subplots(1, 5, figsize=(15, 15))
-    axs = axs.flatten()
-
-    for i, ax in enumerate(axs):
-        ax.imshow(images[i])
-        ax.axis('off')  # Turn off axis labels
-        ax.set_title(f'Image {i+1}', fontsize=5)  # Set a title for each image
-
-    plt.tight_layout()  # Adjust layout to prevent overlap
-    plt.show()
-
-
-def plot_circles_and_lines(param_h_roi, param_nr_sectors, param_band_width, param_nr_sectors_band):
-    fig, ax = plt.subplots(figsize=(6, 6))
-
-    fingerprint = np.ones((param_h_roi, param_h_roi))
-    ax.imshow(fingerprint, cmap='gray', origin='upper')
-
-    x_center, y_center = param_h_roi // 2, param_h_roi // 2
-
-    ax.text(x_center, y_center, 'X', color='red', ha='center', va='center', fontsize=12)
-
-    for i in range(6):
-        circle = Circle((x_center, y_center), (i + 1) * param_band_width, fill=False, edgecolor='red', lw=1.2)
-        ax.add_patch(circle)
-
-    vect_angles = [(i % param_nr_sectors_band) * (2 * 180.0 / param_nr_sectors_band) for i in range(param_nr_sectors)]
-
-    for angle in vect_angles:
-        rad_angle = math.radians(angle)
-        x_end = x_center + ((param_h_roi - 10) / 2) * np.cos(rad_angle)
-        y_end = y_center + ((param_h_roi - 10) / 2) * np.sin(rad_angle)
-        x_c = x_center + param_band_width * np.cos(rad_angle)
-        y_c = y_center + param_band_width * np.sin(rad_angle)
-
-        ax.plot([x_c, x_end], [y_c, y_end], 'red')
-
-    ax.set_xlim(0, param_h_roi)
-    ax.set_ylim(0, param_h_roi)
-    ax.set_aspect('equal', adjustable='box')
-    plt.show()
-
 
 def normalize_sectors(param_points_each_sector, param_cropped_roi, target_mean=100.0, target_variance=100.0):
     mean_each_sector = np.zeros(len(param_points_each_sector))
     variance_each_sector = np.zeros(len(param_points_each_sector))
     norm_sectors = np.zeros_like(param_cropped_roi)
+    #norm_sectors = param_cropped_roi.copy()
 
     for idx in range(len(param_points_each_sector)):
         for point in param_points_each_sector[idx]:
@@ -226,17 +134,19 @@ def normalize_sectors(param_points_each_sector, param_cropped_roi, target_mean=1
 
     for idx in range(len(param_points_each_sector)):
         for point in param_points_each_sector[idx]:
-            variance_each_sector[idx] += math.pow((param_cropped_roi[point[0], point[1]] - mean_each_sector[idx]), 2)
+            pixel = param_cropped_roi[point[0], point[1]]
+            variance_each_sector[idx] += math.pow((pixel - mean_each_sector[idx]), 2)
 
-        variance_each_sector[idx] /= len(param_points_each_sector[idx])
+        variance_each_sector[idx] /= (len(param_points_each_sector[idx]) - 1)
 
     for idx in range(len(param_points_each_sector)):
         for point in param_points_each_sector[idx]:
             if variance_each_sector[idx] == 0:
                 norm_sectors[point[0], point[1]] = target_mean
+                #variance_each_sector[idx] = 1
             else:
                 pixel_value = param_cropped_roi[point[0], point[1]]
-                invariant_formula = math.sqrt((target_variance + math.pow((pixel_value - mean_each_sector[idx]), 2)) / variance_each_sector[idx])
+                invariant_formula = math.sqrt((target_variance * math.pow((pixel_value - mean_each_sector[idx]), 2)) / variance_each_sector[idx])
                 
                 if pixel_value > mean_each_sector[idx]:
                     norm_sectors[point[0], point[1]] = target_mean + invariant_formula
@@ -245,55 +155,54 @@ def normalize_sectors(param_points_each_sector, param_cropped_roi, target_mean=1
 
     return norm_sectors
 
-def get_gabor_filter(filter_idx, param_nr_filters):    
-    sigma = 4
+
+def add_mask(param_points_each_sector, param_cropped_roi):
+    #norm_sectors = np.zeros_like(param_cropped_roi)
+    norm_sectors = np.ones_like(param_cropped_roi) * 255.0
+
+    for idx in range(len(param_points_each_sector)):
+        for point in param_points_each_sector[idx]:
+            norm_sectors[point[0], point[1]] = param_cropped_roi[point[0], point[1]]
+    
+    return norm_sectors
+
+
+def get_even_symmetric_gabor_filter(filter_idx, param_nr_filters):
+    sigma = 4.0
+    lambda_ = 10.0  # Wavelength of the sinusoidal factor
+    psi = 0 #(90-180) * np.pi / 180.0 
     gamma = 1.0
-    psi = (-90) * np.pi / 180.0
-    l = 10
-    kernel_size = 33
+    kernel_size = 33  # Ensure kernel size is odd
+
     theta = filter_idx * np.pi / param_nr_filters
-    
-    cos = np.cos(filter_idx * np.pi / param_nr_filters)
-    sin = np.sin(filter_idx * np.pi / param_nr_filters)
-    
-    sin_vect = [i * sin for i in range(-16, 17)]
-    cos_vect = [i * cos for i in range(-16, 17)] 
-    
-    gabor_filter = np.zeros((kernel_size, kernel_size))
+    sin_vect = [i * np.sin(theta) for i in range(-16, 17)]
+    cos_vect = [i * np.cos(theta) for i in range(-16, 17)]
+
+    gabor_filter = np.zeros((kernel_size, kernel_size), dtype=np.float64)
     
     for i in range(kernel_size):
         for j in range(kernel_size):
-            xx = sin_vect[j] + cos_vect[i]
-            yy = -sin_vect[i] + cos_vect[j]
-            gabor_filter[j, i] = np.exp(-((xx**2) + (gamma * yy**2)) / (2 * sigma**2)) * np.cos((2 * np.pi * xx) / l + psi)
-    
-    #gabor_filter = cv.getGaborKernel((kernel_size, kernel_size), sigma, theta, l, gamma, psi)
+            xx = sin_vect[i] + cos_vect[j]
+            yy = -sin_vect[j] + cos_vect[i]
 
-    return gabor_filter 
+            gabor_filter[i, j] = np.exp(-((xx**2) + (yy**2)) / (2 * sigma**2)) * np.cos(2 * np.pi * xx / lambda_) 
 
-def conv2fft(param_img, param_filter):
-    '''
-    img_height, img_width = param_img.shape
-    filter_height, filter_width = param_filter.shape
-    
-    filtered_image = np.fft.ifft2(np.fft.fft2(param_img, [img_height+filter_height-1, img_width+filter_width-1]) * np.fft.fft2(param_filter, [img_height+filter_height-1, img_width+filter_width-1]))
-    if not np.any(np.imag(param_img)) and not np.any(np.imag(param_filter)):
-        filtered_image = np.real(filtered_image)
+    #gabor_filter = cv.getGaborKernel((kernel_size, kernel_size), sigma, theta, lambda_, gamma, psi, ktype=cv.CV_64F)
+    return gabor_filter
 
-    px = ((filter_height - 1) + ((filter_height - 1) % 2)) // 2
-    py = ((filter_width - 1) + ((filter_width - 1) % 2)) // 2
-        
-    return filtered_image[px:px+img_height, py:py+img_width]
-    '''
-    
-    return fftconvolve(param_img, param_filter, mode='same')
-     
-    #return cv.filter2D(param_img, -1, param_filter) 
+
+def apply_filter(param_img, param_filter):    
+    #return fftconvolve(param_img, param_filter, mode='same')
+    #return convolve2d(param_img, param_filter, mode='same')
+    #return convolve(param_img, param_filter)
+    return cv.filter2D(param_img, cv.CV_64F, param_filter)
 
 
 def determine_fingercode(param_img, param_points_each_sector):   
-    mean_each_sector = np.zeros(len(param_points_each_sector))
-    fingercode_vector = np.zeros(len(param_points_each_sector))
+    #mean_each_sector = np.zeros(len(param_points_each_sector))
+    #fingercode_vector = np.zeros(len(param_points_each_sector))
+    mean_each_sector = np.zeros(len(param_points_each_sector), dtype=np.float64)
+    fingercode_vector = np.zeros(len(param_points_each_sector), dtype=np.float64)
 
     for idx in range(len(param_points_each_sector)):
         for point in param_points_each_sector[idx]:
@@ -311,7 +220,8 @@ def determine_fingercode(param_img, param_points_each_sector):
 
 
 def create_fingercode_image(param_img, param_fingercode, param_points_each_sector):
-    fingercode_image = np.zeros_like(param_img)
+    #fingercode_image = np.zeros_like(param_img)
+    fingercode_image = np.ones_like(param_img) * 255.0
     
     for idx in range(len(param_points_each_sector)):
         for point in param_points_each_sector[idx]:
@@ -319,18 +229,6 @@ def create_fingercode_image(param_img, param_fingercode, param_points_each_secto
 
     return fingercode_image
 
-def display_images(img_vector, num_img_per_row=2, num_images_per_col=4):
-    fig, axs = plt.subplots(num_images_per_col, num_img_per_row, figsize=(15, 15))
-
-    axs = axs.flatten()
-
-    for i, ax in enumerate(axs):
-        ax.imshow(img_vector[i], cmap='gray')
-        ax.axis('off')  # Turn off axis labels
-        ax.set_title(f'Image {i+1}', fontsize=5)  # Set a title for each image
-
-    plt.tight_layout()  # Adjust layout to prevent overlap
-    plt.show()
 
 def process_image(img):
     x_center, y_center = find_reference_point(img)
@@ -342,6 +240,8 @@ def process_image(img):
         points_each_sector = divide_into_sectors(h_roi, nr_sectors, band_width, nr_sectors_band)
         #plot_sectors(points_each_sector, h_roi, nr_bands, nr_sectors_band)
         #plot_circles_and_lines(h_roi, nr_sectors, band_width, nr_sectors_band)
+        
+        #cropped_roi = add_mask(points_each_sector, cropped_roi)
 
         norm_cropped_roi = normalize_sectors(points_each_sector, cropped_roi)
 
@@ -352,9 +252,10 @@ def process_image(img):
         fingercode_images = []
 
         for idx in range(nr_filters):
-            gabor_filter = get_gabor_filter(idx, nr_filters)
+            gabor_filter = get_even_symmetric_gabor_filter(idx, nr_filters)
             
-            filtered_roi = conv2fft(norm_cropped_roi.copy(), gabor_filter)
+            filtered_roi = apply_filter(norm_cropped_roi.copy(), gabor_filter)
+            #filtered_roi = add_mask(points_each_sector, filtered_roi)
             filtered_images.append(filtered_roi)
             
             fingercode = determine_fingercode(filtered_roi, points_each_sector)
