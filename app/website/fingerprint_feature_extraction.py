@@ -263,10 +263,16 @@ def process_image(img):
             
             fingercode_image = create_fingercode_image(filtered_roi, fingercode, points_each_sector)
             fingercode_images.append(fingercode_image)
+
+            cv.imshow('a', fingercode_image.astype(np.uint8))
+            cv.waitKey()
+            cv.destroyAllWindows()
         
-        #filtered_images = np.array(filtered_images, dtype=np.uint8)   
+        filtered_images = np.array(filtered_images, dtype=np.uint8)   
         #display_images(fingercode_images)  
         
         fingercodes_encrypted = [encrypt.ecrypt_fingercode(fingercode) for fingercode in fingercodes]
         
         return fingercodes_encrypted, fingercodes
+    
+    return [], []

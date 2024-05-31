@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 class Fingerprint(db.Model):
-    id = db.Column(db.Integer)
+    id = db.Column(db.Integer, primary_key=True)
     fingerprint_data = db.Column(db.String, nullable=False)
 
 def init_db(app):

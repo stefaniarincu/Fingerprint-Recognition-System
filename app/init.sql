@@ -1,4 +1,4 @@
 CREATE TABLE FINGERPRINT (
-    id INTEGER,
+    id INTEGER PRIMARY KEY,
     fingercode BYTEA  
 );

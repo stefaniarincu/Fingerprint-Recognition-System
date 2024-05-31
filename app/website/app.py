@@ -21,7 +21,11 @@ def upload_image():
             return 'No file part'
         
         image = request.files['image']
-        img = cv2.imdecode(np.fromstring(image.read(), np.uint8), cv2.IMREAD_GRAYSCALE)
+        img = cv2.imdecode(np.frombuffer(image.read(), np.uint8), cv2.IMREAD_GRAYSCALE)
+
+        cv2.imshow('a', img)
+        cv2.waitKey()
+        cv2.destroyAllWindows()
 
         processed_img = process_image(img)
         fingerprint_data = encrypt.ecrypt_fingercode(processed_img[0][0])

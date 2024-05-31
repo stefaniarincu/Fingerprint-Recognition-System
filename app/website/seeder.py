@@ -31,25 +31,26 @@ images_path = os.path.join(director_path, image_extension)
 #trebuie vazut daca apar ordonate sau nu
 files = sorted(glob.glob(images_path))
 
-cnt = 0
+cnt = 200
 
-for i in range(len(files)):
+for i in range(8, len(files)):
     print('Procesare imagine nr. %d...' % i)
     img = cv.imread(files[i], cv.IMREAD_GRAYSCALE)
 
     encrypted_fingerprints, fingercodes = process_image(img)
 
-    for enc_fingerprint in encrypted_fingerprints:
-        insert_into_table(cnt, enc_fingerprint)
+    if len(encrypted_fingerprints) != 0:
+        for enc_fingerprint in encrypted_fingerprints:
+            insert_into_table(cnt, enc_fingerprint)
 
-        if cnt == 0:
-            encrypt.write_data("nume1.txt", enc_fingerprint)
-            print(files[i])
+            if cnt == 0:
+                encrypt.write_data("nume1.txt", enc_fingerprint)
+                print(files[i])
 
-            enc2 = encrypt.ecrypt_fingercode(fingercodes[0])
-            encrypt.write_data("nume2.txt", enc2)
+                enc2 = encrypt.ecrypt_fingercode(fingercodes[0])
+                encrypt.write_data("nume2.txt", enc2)
 
-        cnt += 1
+            cnt += 1
 
 cursor.close()
 conn.close()
