@@ -1,5 +1,3 @@
-import encrypt
-
 from cgi import print_form
 from pickletools import float8
 import numpy as np
