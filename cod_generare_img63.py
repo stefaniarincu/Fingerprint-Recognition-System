@@ -141,7 +141,7 @@ def plot_circles_and_lines(param_h_roi, param_nr_sectors, param_band_width, para
 def find_reference_point(param_img):
     block_size = 8    
     variance_thresh = 20
-    k_size_close = 8
+    k_size_close = 10
     k_size_erode = 38
     num_rows, num_cols = param_img.shape
     
@@ -201,12 +201,12 @@ def find_reference_point(param_img):
 
     #kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE,(k_size_close, k_size_close))
     
-    mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_CLOSE, np.ones((k_size_close, k_size_close), np.uint8), iterations=2)
+    mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_CLOSE, np.ones((k_size_close, k_size_close), np.uint8), iterations=4)
     show_image('close', mask_variance.astype(np.uint8) * 255.0, 0.5)
     #kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE,(k_size_erode, k_size_erode))
 
     mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_ERODE, np.ones((k_size_erode, k_size_erode), np.uint8))
-    mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_ERODE, np.ones((8, 8), np.uint8), iterations=2)
+    mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_ERODE, np.ones((8, 8), np.uint8), iterations=1)
     show_image('erode', mask_variance.astype(np.uint8) * 255.0, 0.5)
     
     #mask = image_filtered * mask_variance
@@ -227,7 +227,7 @@ def find_reference_point(param_img):
     cv.waitKey()
     cv.destroyAllWindows()
 
-    """plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(10, 10))
     plt.imshow(mask, cmap='viridis', interpolation='nearest')
     plt.colorbar(label='Valoarea intensității pixelilor')
 
@@ -237,7 +237,7 @@ def find_reference_point(param_img):
     plt.xlabel('X')
     plt.ylabel('Y')
     plt.legend()
-    plt.show()"""
+    plt.show()
 
     return x_center, y_center
 
@@ -451,7 +451,7 @@ image_extension = '*.tif'
 images_path = os.path.join(director_path, image_extension)
 files = glob.glob(images_path)
 
-for i in range(0, len(files)):
+for i in range(63, len(files)):
     print('Procesare imagine nr. %d...' % i)
     img = cv.imread(files[i], cv.IMREAD_GRAYSCALE)
     process_image(img)

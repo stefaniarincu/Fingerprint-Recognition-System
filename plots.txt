@@ -104,3 +104,15 @@ def plot_circles_and_lines(param_h_roi, param_nr_sectors, param_band_width, para
     ax.set_ylim(0, param_h_roi)
     ax.set_aspect('equal', adjustable='box')
     plt.show()
+
+plt.figure(figsize=(10, 10))
+plt.imshow(mask, cmap='viridis', interpolation='nearest')
+plt.colorbar(label='Value')
+
+plt.scatter([x_center], [y_center], color='red', marker='X', label='Max Value')
+
+plt.title('Fingerprint mask heatmap with maximum value highlighted')
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+plt.legend()
+plt.show()
