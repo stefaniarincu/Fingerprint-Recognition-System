@@ -143,7 +143,7 @@ def find_reference_point(param_img):
     k_size_erode = 38
     num_rows, num_cols = param_img.shape
     
-    param_img1 = cv.GaussianBlur(param_img, (3, 3), 0)
+    param_img1 = cv.GaussianBlur(param_img.copy(), (3, 3), 0)
     clahe = cv.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
     param_img1 = clahe.apply(param_img1.copy())
     
@@ -207,8 +207,8 @@ def find_reference_point(param_img):
     mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_ERODE, np.ones((8, 8), np.uint8), iterations=1)
     show_image('erode', mask_variance.astype(np.uint8) * 255.0, 0.5)
     
-    #mask = image_filtered * mask_variance
-    mask = np.where(mask_variance, image_filtered, 0)
+    mask = image_filtered * mask_variance
+    #mask = np.where(mask_variance, image_filtered, 0)
 
     show_image('mask final', mask.astype(np.uint8), 0.5)
 
@@ -227,11 +227,11 @@ def find_reference_point(param_img):
 
     plt.figure(figsize=(10, 10))
     plt.imshow(mask, cmap='viridis', interpolation='nearest')
-    plt.colorbar(label='Valoarea intensității pixelilor')
+    plt.colorbar(label='Amplitudine')
 
-    plt.scatter([x_center], [y_center], color='red', marker='X', label='Valoarea maximă')
+    plt.scatter([x_center], [y_center], color='red', marker='X', label='Punctul de amplitudine maximă')
 
-    plt.title('Harta intensității pixelilor cu valoarea maximă evidențiată (Heatmap)')
+    plt.title('Harta amplitudinii (Heatmap)')
     plt.xlabel('X')
     plt.ylabel('Y')
     plt.legend()

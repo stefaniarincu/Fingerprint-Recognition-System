@@ -116,3 +116,160 @@ plt.xlabel('X-axis')
 plt.ylabel('Y-axis')
 plt.legend()
 plt.show()
+
+
+-------------------------------------------------------------------------------------------------
+
+def show_image(title, img, size):
+    img = cv.resize(img, (0, 0), fx=size, fy=size)
+    cv.imshow(title, img)
+    #cv.waitKey(0)
+    #cv.destroyAllWindows()
+
+def display_images_filtre(img_vector, num_img_per_row=4, num_images_per_col=2):
+    fig, axs = plt.subplots(num_images_per_col, num_img_per_row, figsize=(6, 2 * num_images_per_col))
+    axs = axs.flatten()
+
+    for i, ax in enumerate(axs):
+        ax.imshow(img_vector[i], cmap='gray')
+        ax.axis('off')  # Turn off axis labels
+        ax.set_title(f'Imagine filtrată - direcția {i * 180 / 8}', fontsize=6, pad=0.5)  # Set a title for each image
+
+    plt.tight_layout()  # Adjust layout to prevent overlap
+    plt.show()
+
+def display_images_coduri(img_vector, num_img_per_row=4, num_images_per_col=2):
+    fig, axs = plt.subplots(num_images_per_col, num_img_per_row, figsize=(6, 2 * num_images_per_col))
+    axs = axs.flatten()
+
+    for i, ax in enumerate(axs):
+        ax.imshow(img_vector[i], cmap='gray')
+        ax.axis('off')  # Turn off axis labels
+        ax.set_title(f'FingerCode {i+1}', fontsize=6, pad=0.5)  # Set a title for each image
+
+    plt.tight_layout()  # Adjust layout to prevent overlap
+    plt.show()
+
+def display_center_point(img, x_center, y_center):
+    plt.imshow(img, cmap='gray')
+    plt.scatter(x_center, y_center, c='yellow', marker='X', label='Punctul de referință')
+    
+    plt.title('Amprenta cu punctul de referință')
+    plt.xlabel('X')
+    plt.ylabel('Y')
+    plt.legend()
+    plt.show()
+    """
+    img_color = cv.cvtColor(img, cv.COLOR_GRAY2BGR)  # Convert grayscale image to BGR
+    cv.drawMarker(img_color, (x_center, y_center), color=(0, 255, 255), markerType=cv.MARKER_TILTED_CROSS, markerSize=20, thickness=2)
+    
+    # Add text labels
+    cv.putText(img_color, '', (x_center + 10, y_center - 10), cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 1, cv.LINE_AA)
+    
+    # Display the image
+    cv.imshow('Fingerprint with Center Point', img_color)
+    cv.waitKey(0)  # Wait for a key press to close the window
+    cv.destroyAllWindows()"""
+
+def plot_sectors(param_points_each_sector, param_h_roi, param_nr_bands, param_nr_sectors_band):
+    images = []
+    
+    colors_rgb = [
+        np.array([255, 0, 0]),     # Red
+        np.array([0, 255, 0]),     # Green
+        np.array([0, 0, 255]),     # Blue
+        np.array([255, 255, 0]),   # Yellow
+        np.array([255, 0, 255]),   # Magenta
+        np.array([0, 255, 255]),   # Cyan
+        np.array([128, 0, 0]),     # Maroon
+        np.array([0, 128, 0]),     # Dark Green
+        np.array([0, 0, 128]),     # Navy
+        np.array([128, 128, 0]),   # Olive
+        np.array([128, 0, 128]),   # Purple
+        np.array([0, 128, 128]),   # Teal
+        np.array([255, 165, 0]),   # Orange
+        np.array([255, 192, 203]), # Pink
+        np.array([128, 128, 128]), # Gray
+        np.array([255, 255, 255])  # White
+    ]
+
+    cnt = 0
+
+    for i in range(param_nr_bands):
+        image = np.ones((param_h_roi, param_h_roi), dtype=np.uint8)   
+        image = cv.cvtColor(image, cv.COLOR_GRAY2RGB) 
+
+        for j in range(param_nr_sectors_band):
+            for idx in param_points_each_sector[cnt]:
+                image[idx[0], idx[1]] = colors_rgb[j]
+        
+            cnt += 1
+            
+        images.append(image)
+    
+
+    fig, axs = plt.subplots(1, 5, figsize=(15, 15))
+    axs = axs.flatten()
+
+    for i, ax in enumerate(axs):
+        ax.imshow(images[i])
+        ax.axis('off')  # Turn off axis labels
+        ax.set_title(f'Cerc {i+1}', fontsize=5)  # Set a title for each image
+
+    plt.tight_layout()  # Adjust layout to prevent overlap
+    plt.show()
+    '''
+
+    for i in range(len(param_points_each_sector)):
+        image = np.ones((param_h_roi, param_h_roi), dtype=np.uint8)   
+        image = cv.cvtColor(image, cv.COLOR_GRAY2RGB)
+        for idx in param_points_each_sector[i]:
+           image[idx[0], idx[1]] = np.array([255, 255, 255])  # White
+            
+        images.append(image)
+    
+
+    fig, axs = plt.subplots(10, 8, figsize=(15, 15))
+    
+
+    axs = axs.flatten()
+
+    for i, ax in enumerate(axs):
+        ax.imshow(images[i])
+        ax.axis('off')  # Turn off axis labels
+        ax.set_title(f'Sector {i+1}', fontsize=5)  # Set a title for each image
+
+    plt.tight_layout()  # Adjust layout to prevent overlap
+    plt.show()
+    '''
+
+
+def plot_circles_and_lines(param_h_roi, param_nr_sectors, param_band_width, param_nr_sectors_band, x, y, image):
+    fig, ax = plt.subplots(figsize=(6, 6))
+
+    fingerprint = image.copy()
+    ax.imshow(fingerprint, cmap='gray', origin='lower')
+
+    x_center, y_center = x, y
+
+    ax.text(x_center, y_center, 'X', color='yellow', ha='center', va='center', fontsize=12)
+
+    for i in range(6):
+        circle = Circle((x_center, y_center), (i + 1) * param_band_width, fill=False, edgecolor='red', lw=1.2)
+        ax.add_patch(circle)
+
+    vect_angles = [(i % param_nr_sectors_band) * (2 * 180.0 / param_nr_sectors_band) for i in range(param_nr_sectors)]
+
+    for angle in vect_angles:
+        rad_angle = math.radians(angle)
+        x_end = x_center + ((param_h_roi - 10) / 2) * np.cos(rad_angle)
+        y_end = y_center + ((param_h_roi - 10) / 2) * np.sin(rad_angle)
+        x_c = x_center + param_band_width * np.cos(rad_angle)
+        y_c = y_center + param_band_width * np.sin(rad_angle)
+
+        ax.plot([x_c, x_end], [y_c, y_end], 'red')
+
+    ax.set_xlim(0, image.shape[1])
+    ax.set_ylim(image.shape[0], 0) 
+    ax.set_aspect('equal', adjustable='box')
+    plt.show()
