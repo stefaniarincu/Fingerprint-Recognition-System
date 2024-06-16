@@ -51,8 +51,8 @@ def ecrypt_fingercode(feature_vector):
 
     return enc_fingercode_proto
 
-def apply_threshold(euclidean_dist, threshold=100):
-    if euclidean_dist < 100:
+def apply_threshold(euclidean_dist, threshold=805000):
+    if euclidean_dist < threshold:
         return 1
     else:
         return 0

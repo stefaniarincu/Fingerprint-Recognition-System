@@ -16,7 +16,7 @@ from matplotlib.patches import Circle
 nr_filters = 8
 nr_bands = 5
 nr_sectors_band = 16 #k
-band_width = 10 #b
+band_width = 20 #b
 nr_sectors = nr_bands * nr_sectors_band
 h_roi = 10 + 2 * ((nr_bands + 1) * band_width) - 1 #ca sa fie impar => mijlocul e centrul
 
@@ -31,8 +31,8 @@ def find_reference_point(param_img):
     blurred_img = clahe.apply(blurred_img)
     
     gradient_x, gradient_y = np.gradient(blurred_img)    
-    nominator = (gradient_x + 1j * gradient_y) ** 2
-    denominator = np.abs((gradient_x + 1j * gradient_y) ** 2)
+    nominator = (gradient_x + 1j * gradient_y)** 2   
+    denominator = np.abs(nominator)
 
     grad_field = np.ones_like(param_img, dtype=complex)
     for i in range(param_img.shape[0]):
@@ -44,10 +44,15 @@ def find_reference_point(param_img):
     exponent = np.exp(-(grid_x ** 2 + grid_y ** 2) / (2 * np.sqrt(60) ** 2))
     core_filter = exponent * (grid_x + 1j * grid_y)
 
-    padded_grad_field = np.pad(grad_field, ((20, 20), (20, 20)), mode='reflect')
-    image_filtered = fftconvolve(padded_grad_field, core_filter, mode='same')
-    image_filtered = np.abs(image_filtered[20 : 20 + grad_field.shape[0], 20 : 20 + grad_field.shape[1]])
+    img_height, img_width = grad_field.shape
+    filter_height, filter_width = core_filter.shape
 
+    image_filtered = np.fft.ifft2(np.fft.fft2(grad_field, [img_height+filter_height-1, img_width+filter_width-1]) * np.fft.fft2(core_filter, [img_height+filter_height-1, img_width+filter_width-1]))
+    
+    px = ((filter_height - 1) + (filter_height - 1) % 2) // 2
+    py = ((filter_width - 1) + (filter_width - 1) % 2) // 2
+    image_filtered = np.abs(image_filtered[px:px+img_height, py:py+img_width])
+    
     new_rows = int(block_size * np.ceil((float(num_rows)) / (float(block_size))))
     new_cols = int(block_size * np.ceil((float(num_cols)) / (float(block_size))))
 
@@ -63,9 +68,9 @@ def find_reference_point(param_img):
     variance_matrix = variance_matrix[0:num_rows][:, 0:num_cols]    
     mask_variance = (variance_matrix > variance_thresh).astype(np.uint8)
     
-    mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_CLOSE, np.ones((8, 8), np.uint8), iterations=2)
-    mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_ERODE, np.ones((38, 38), np.uint8))
-    mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_ERODE, np.ones((8, 8), np.uint8), iterations=2)
+    mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_CLOSE, np.ones((10, 10), np.uint8))#, iterations=2)
+    mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_ERODE, np.ones((44, 44), np.uint8))
+    mask_variance = cv.morphologyEx(mask_variance, cv.MORPH_ERODE, np.ones((40, 40), np.uint8), iterations=3)
     
     mask = image_filtered * mask_variance
 
@@ -170,10 +175,10 @@ def add_mask(param_points_each_sector, param_cropped_roi):
 
 def get_even_symmetric_gabor_filter(filter_idx, param_nr_filters):
     sigma = 4.0
-    lambda_ = 10.0  # Wavelength of the sinusoidal factor
-    psi = 0 #(90-180) * np.pi / 180.0 
+    lambda_ = 10.0 
+    psi = (90-180) * np.pi / 180.0 
     gamma = 1.0
-    kernel_size = 33  # Ensure kernel size is odd
+    kernel_size = 33 
 
     theta = filter_idx * np.pi / param_nr_filters
     sin_vect = [i * np.sin(theta) for i in range(-16, 17)]
@@ -188,22 +193,36 @@ def get_even_symmetric_gabor_filter(filter_idx, param_nr_filters):
 
             gabor_filter[i, j] = np.exp(-((xx**2) + (yy**2)) / (2 * sigma**2)) * np.cos(2 * np.pi * xx / lambda_) 
 
-    #gabor_filter = cv.getGaborKernel((kernel_size, kernel_size), sigma, theta, lambda_, gamma, psi, ktype=cv.CV_64F)
-    return gabor_filter
+    return gabor_filter  
 
 
-def apply_filter(param_img, param_filter):    
+def apply_filter(param_img, param_filter):  
+    img_height, img_width = param_img.shape
+    filter_height, filter_width = param_filter.shape
+
+    if np.any(np.any(np.imag(param_img))) or np.any(np.any(np.imag(param_filter))):
+            filtered_image = np.fft.ifft2(np.fft.fft2(param_img, [img_height+filter_height-1, img_width+filter_width-1]) * np.fft.fft2(param_filter, [img_height+filter_height-1, img_width+filter_width-1]))
+    else:
+        filtered_image = np.real(np.fft.ifft2(np.fft.fft2(param_img, [img_height+filter_height-1, img_width+filter_width-1]) * np.fft.fft2(param_filter, [img_height+filter_height-1, img_width+filter_width-1])))
+
+    px = ((filter_height - 1) + (filter_height - 1) % 2) // 2
+    py = ((filter_width - 1) + (filter_width - 1) % 2) // 2
+    
+    filtered_image = filtered_image[px:px+img_height, py:py+img_width]
+    
+    return filtered_image
+    #return cv.filter2D(param_img, cv.CV_64F, param_filter)
     #return fftconvolve(param_img, param_filter, mode='same')
     #return convolve2d(param_img, param_filter, mode='same')
     #return convolve(param_img, param_filter)
-    return cv.filter2D(param_img, cv.CV_64F, param_filter)
-
+    
 
 def determine_fingercode(param_img, param_points_each_sector):   
     #mean_each_sector = np.zeros(len(param_points_each_sector))
     #fingercode_vector = np.zeros(len(param_points_each_sector))
     mean_each_sector = np.zeros(len(param_points_each_sector), dtype=np.float64)
     fingercode_vector = np.zeros(len(param_points_each_sector), dtype=np.float64)
+    #fingercode_vector = np.zeros(len(param_points_each_sector), dtype=np.float64)
 
     for idx in range(len(param_points_each_sector)):
         for point in param_points_each_sector[idx]:
@@ -214,8 +233,11 @@ def determine_fingercode(param_img, param_points_each_sector):
     for idx in range(len(param_points_each_sector)):
         for point in param_points_each_sector[idx]:
             fingercode_vector[idx] += np.abs(param_img[point[0], point[1]] - mean_each_sector[idx])
+            #fingercode_vector[idx] += (param_img[point[0], point[1]] - mean_each_sector[idx])**2
 
         fingercode_vector[idx] /= len(param_points_each_sector[idx])
+        #fingercode_vector[idx] /= len(param_points_each_sector[idx])
+        #fingercode_vector[idx] = np.sqrt(fingercode_vector[idx])
 
     return fingercode_vector
 
@@ -254,12 +276,20 @@ def process_image(img):
 
         for idx in range(nr_filters):
             gabor_filter = get_even_symmetric_gabor_filter(idx, nr_filters)
-            
+
+            '''gabor_filter_print = (gabor_filter - np.min(gabor_filter, axis=(0, 1))) /  (np.max(gabor_filter, axis=(0, 1)) -  np.min(gabor_filter, axis=(0, 1)))
+            cv.imshow("gabor 2D", (gabor_filter_print * 255.0).astype(np.uint8))
+            cv.waitKey()
+            cv.destroyAllWindows()'''
+
             filtered_roi = apply_filter(norm_cropped_roi.copy(), gabor_filter)
             filtered_roi = add_mask(points_each_sector, filtered_roi)
+
             filtered_images.append(filtered_roi)
             
-            fingercode = determine_fingercode(filtered_roi, points_each_sector)
+            fingercode, fingercode2 = determine_fingercode(filtered_roi, points_each_sector)
+            for i in range(len(fingercode)):
+                print(i, fingercode[i], fingercode2[i])
             fingercodes.append(fingercode)
             
             fingercode_image = create_fingercode_image(filtered_roi, fingercode, points_each_sector)
@@ -271,15 +301,18 @@ def process_image(img):
 
         fingercode_images = np.array(fingercode_images, dtype=np.uint8)   
         #display_images_coduri(fingercode_images)
+
+        #fingercodes_encrypted = [encrypt.ecrypt_fingercode(fingercode) for fingercode in fingercodes]
+
+        clear_fingercode = np.array([code for fingercode in fingercodes for code in fingercode])
+        print(clear_fingercode.shape)
         
-        fingercodes_encrypted = [encrypt.ecrypt_fingercode(fingercode) for fingercode in fingercodes]
+        fingercode_encrypted = encrypt.ecrypt_fingercode(clear_fingercode)
+        return clear_fingercode, fingercode_encrypted
         
-        return fingercodes_encrypted, fingercodes
-    
     return [], []
 
-director_path = "D:/Licenta/74034_3_En_4_MOESM1_ESM/FVC2004/Dbs/DB1_A/"
-director_path_save = "C:/Users/stefa/Desktop/Amprente_centru1/"
+director_path = "D:/Licenta/74034_3_En_4_MOESM1_ESM/FVC2004/Dbs/DB1_A/"#"C:/Users/stefa/Downloads/CrossMatch_Sample_DB/"#
 image_extension = '*.tif'
 
 images_path = os.path.join(director_path, image_extension)
@@ -288,5 +321,5 @@ files = glob.glob(images_path)
 for i in range(len(files)):
     print('Procesare imagine nr. %d...' % i)
     img = cv.imread(files[i], cv.IMREAD_GRAYSCALE)
-
-    fing, fing2 = process_image(img)
+    filename = os.path.basename(files[i])
+    clear_fingercode, enc_fingercode = process_image(img)
