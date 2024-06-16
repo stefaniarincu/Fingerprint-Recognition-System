@@ -5,3 +5,5 @@
 /app/__pycache__
 app/public.txt
 app/secret.txt
+app/public_test.txt
+app/secret_test.txt
