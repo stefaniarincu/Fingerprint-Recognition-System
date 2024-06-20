@@ -1,5 +1,6 @@
-CREATE TABLE FINGERPRINT_TEST (
+CREATE TABLE FINGERPRINT (
     id INTEGER PRIMARY KEY,
-    image_name TEXT,
-    fingercode BYTEA  
+    file_path TEXT,
+    fingercode BYTEA, 
+    fingercode_clear BYTEA  
 );
