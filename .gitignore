@@ -7,3 +7,10 @@ app/public.txt
 app/secret.txt
 app/public_test.txt
 app/secret_test.txt
+app/public_205.txt
+app/secret_205.txt
+/app/website/__pycache__
+/app/website/__pycache__
+/app/website/__pycache__
+clear.txt
+encrypted.txt

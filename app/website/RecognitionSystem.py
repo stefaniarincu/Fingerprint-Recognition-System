@@ -2,7 +2,7 @@ from FeatureExtractor import FeatureExtractor
 from EncryptionScheme import EncryptionScheme
 from Database import Database
 import numpy as np
-import cv2 as cv
+import os
 
 class FingRecognitionSystem:
     def __init__(self):
@@ -43,18 +43,23 @@ class FingRecognitionSystem:
     
     def compare_all(self):
         all_rows = self.db.get_all()
+        print(len(all_rows))
 
-        with open("encrypted.txt", "w") as f_enc, open("clear", "w") as f_clear:
-            for i in range (len(all_rows)):
-                for j in range(i+1, len(all_rows[i])):
+        with open("encrypted.txt", "w") as f_enc, open("clear.txt", "w") as f_clear:
+            for i in range(len(all_rows)):
+                for j in range(i+1, len(all_rows)):
+                    print(f'{i} {j}')
                     saved_enc_fingercode_1 = bytes(all_rows[i][2]) 
                     saved_enc_fingercode_2 = bytes(all_rows[j][2])
                     enc_dist = self.enc_scheme.calculate_euclidean_dist(saved_enc_fingercode_1, saved_enc_fingercode_2)
-                    f_enc.write(f"{all_rows[i][1]}, {all_rows[i][2]}, {enc_dist} \n")
+                    f_enc.write(f"{os.path.basename(all_rows[i][1])}, {os.path.basename(all_rows[j][1])}, {enc_dist} \n")
 
                     saved_clear_fingercode_1 = np.frombuffer(all_rows[i][3], dtype=np.float64)
                     saved_clear_fingercode_2 = np.frombuffer(all_rows[j][3], dtype=np.float64)
                     clear_dist = np.sum(np.square(saved_clear_fingercode_1 - saved_clear_fingercode_2))
-                    f_clear.write(f"{all_rows[i][1]}, {all_rows[i][2]}, {clear_dist} \n")
+                    f_clear.write(f"{os.path.basename(all_rows[i][1])}, {os.path.basename(all_rows[j][1])}, {clear_dist} \n")
 
         self.db.close_connection()    
+
+RS = FingRecognitionSystem()
+RS.compare_all()
