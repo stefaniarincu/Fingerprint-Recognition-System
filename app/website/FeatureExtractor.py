@@ -256,7 +256,7 @@ class FeatureExtractor:
 
     def create_fingercode_image(self, param_img, param_fingercode):
         #fingercode_image = np.zeros_like(param_img)
-        fingercode_image = np.ones_like(param_img) * 255.0
+        fingercode_image = np.ones((self.h_roi, self.h_roi), dtype=np.uint8) * 255.0
         
         for idx in range(len(self.sectors)):
             for point in self.sectors[idx]:
