@@ -33,20 +33,16 @@ class FingerprintRecognitionApp:
             fingerprint_img = cv.imread(file_path, cv.IMREAD_GRAYSCALE)
             self.selected_image = fingerprint_img
             
-            threading.Thread(target=self.process_image, args=(self.selected_image,)).start()
-            
+            self.fing_rec_syst.find_center_point(fingerprint_img)
             self.select_btn.place_forget()
-    
-    def process_image(self, image):
-        self.fing_rec_syst.find_center_point(image)
-        self.root.after(0, self.display_image, self.fing_rec_syst.feature_extractor.center_point_image, self.image_frame, "Centrul evidențiat în amprenta selectată")
-        
-        threading.Thread(target=self.get_roi, args=(self.selected_image,)).start()
+            self.root.after(0, self.display_image, self.fing_rec_syst.feature_extractor.center_point_image, self.image_frame, "Centrul evidențiat în amprenta selectată")
+
+            threading.Thread(target=self.get_roi, args=(self.selected_image,)).start()
     
     def get_roi(self, image):
         self.fing_rec_syst.determine_cropped_roi(image)
         if self.fing_rec_syst.cropped_roi.shape[0] != 0:
-            self.root.after(0, self.display_image, self.fing_rec_syst.feature_extractor.sectors_img, self.image_frame, "Sectoare evidențiate în amprenta selectată")
+            self.root.after(0, self.display_images, self.fing_rec_syst.feature_extractor.center_point_image, self.fing_rec_syst.feature_extractor.sectors_img, self.image_frame, "Centrul evidențiat în amprenta selectată", "Sectoare evidențiate în amprenta selectată")
             threading.Thread(target=self.extract_and_match_fingercode).start()
         else:
             self.root.after(0, messagebox.showerror, "Eroare", "Amprentă plasată incorect! Selectați altă imagine.")
@@ -61,63 +57,56 @@ class FingerprintRecognitionApp:
 
         if result != '':
             original_img = self.selected_image  # Imaginea originală selectată
-            match_img = cv.imread(result, cv.IMREAD_GRAYSCALE)  # Imaginea de fingercode găsită
+            match_img = cv.imread(result, cv.IMREAD_GRAYSCALE)  # Imaginea găsită
 
-            # Redimensionăm ambele imagini pentru a le afișa în fereastră una sub alta
-            original_img_resized = cv.resize(original_img, (350, 350))
-            match_img_resized = cv.resize(match_img, (350, 350))
-
-            self.display_images(original_img_resized, match_img_resized, self.image_frame)
-
-            # Afișăm distanțele calculate
+            self.display_images(original_img, match_img, self.image_frame, "Amprenta selectată", "Amprenta găsită în baza de date")
             self.display_distances(clear_dist, enc_dist)
 
-            # Adăugăm butonul de reset
             self.reset_btn = tk.Button(self.root, text="Resetați", font=("Helvetica", 10), command=self.reset_interface)
             self.reset_btn.place(relx=0.5, rely=0.9, anchor="center")
         else:
             messagebox.showerror("Eroare", "Utilizatorul nu este înregistrat în baza de date!")
             self.reset_interface()
     
-    def display_image(self, fingerprint_image, frame, description_text):
-        image = Image.fromarray(fingerprint_image)
+    def display_image(self, img, frame, descr):
+        image = Image.fromarray(img)
         image.thumbnail((350, 350)) 
         photo = ImageTk.PhotoImage(image)
         
         for widget in frame.winfo_children():
             widget.destroy()
 
-        image_description = tk.Label(frame, text=description_text, font=("Helvetica", 12))
+        image_description = tk.Label(frame, text=descr, font=("Helvetica", 12))
         image_description.pack(pady=(10, 5))
 
         img_label = tk.Label(frame, image=photo)
         img_label.image = photo  # Menținem o referință pentru a preveni garbage collection
         img_label.pack()
 
-    def display_images(self, fingerprint_image_1, fingerprint_image_2, frame):
-        original_photo = ImageTk.PhotoImage(image=Image.fromarray(fingerprint_image_1))
-        match_photo = ImageTk.PhotoImage(image=Image.fromarray(fingerprint_image_2))
+    def display_images(self, img_1, img_2, frame, descr_1, descr_2):
+        resized_img_1 = ImageTk.PhotoImage(image=Image.fromarray(cv.resize(img_1, (350, 350))))
+        resized_img_2 = ImageTk.PhotoImage(image=Image.fromarray(cv.resize(img_2, (350, 350))))
 
         for widget in frame.winfo_children():
             widget.destroy()
 
         # Descrierea pentru imaginea originală
-        original_description = tk.Label(frame, text="Amprenta selectată", font=("Helvetica", 12))
-        original_description.grid(row=0, column=0, padx=(10, 100), pady=(10, 5))  
+        description_1 = tk.Label(frame, text=descr_1, font=("Helvetica", 12))
+        description_1.grid(row=0, column=0, padx=(10, 100), pady=(10, 5))  
 
         # Afișăm imaginea originală sub descriere
-        original_label = tk.Label(frame, image=original_photo)
-        original_label.image = original_photo  
-        original_label.grid(row=1, column=0, padx=(10, 100), pady=10)  
+        label_1 = tk.Label(frame, image=resized_img_1)
+        label_1.image = resized_img_1  
+        label_1.grid(row=1, column=0, padx=(10, 100), pady=10)  
 
         # Descrierea pentru imaginea de fingercode găsită
-        match_description = tk.Label(frame, text="Amprenta găsită în baza de date", font=("Helvetica", 12))
-        match_description.grid(row=0, column=1, padx=(100, 10), pady=(10, 5)) 
+        description_2 = tk.Label(frame, text=descr_2, font=("Helvetica", 12))
+        description_2.grid(row=0, column=1, padx=(100, 10), pady=(10, 5)) 
 
         # Afișăm imaginea de fingercode găsită sub descriere
-        match_label = tk.Label(frame, image=match_photo)
-        match_label.image = match_photo 
-        match_label.grid(row=1, column=1, padx=(100, 10), pady=10) 
+        label_2 = tk.Label(frame, image=resized_img_2)
+        label_2.image = resized_img_2 
+        label_2.grid(row=1, column=1, padx=(100, 10), pady=10) 
 
     def display_fingercode_images(self, fingercode_images, frame):
         for widget in frame.winfo_children():
@@ -140,9 +129,6 @@ class FingerprintRecognitionApp:
     def display_distances(self, clear_distance, encrypted_distance):
         self.distances_frame.place(relx=0.5, rely=0.8, anchor="center")
         
-        for widget in self.distances_frame.winfo_children():
-            widget.destroy()
-        
         clear_distance_label = tk.Label(self.distances_frame, text=f"Distanța în domeniul clar: {clear_distance}", font=("Helvetica", 12))
         clear_distance_label.pack()
         
@@ -150,7 +136,6 @@ class FingerprintRecognitionApp:
         encrypted_distance_label.pack()
     
     def reset_interface(self):
-        # Clear the image frame and distances frame
         for widget in self.image_frame.winfo_children():
             widget.destroy()
         
@@ -158,7 +143,6 @@ class FingerprintRecognitionApp:
             widget.destroy()
         
         self.image_frame.configure(borderwidth=0, relief="flat")
-        
         self.select_btn.place(relx=0.5, rely=0.3, anchor="center")
 
         self.fing_rec_syst = FingRecognitionSystem()
