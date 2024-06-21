@@ -43,7 +43,7 @@ class FingRecognitionSystem:
                 return row[1], saved_fingercodes_image, selected_fingercodes_image, clear_dist, enc_dist 
             
         self.db.close_connection()    
-        return '', 0, 0
+        return '', np.array([]), np.array([]), 0, 0
     
     def compare_all(self):
         all_rows = self.db.get_all()

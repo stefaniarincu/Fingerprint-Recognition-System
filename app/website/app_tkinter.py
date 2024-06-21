@@ -11,7 +11,7 @@ class FingerprintRecognitionApp:
         self.root.state("zoomed")
         
         self.image_frame = tk.Frame(self.root)
-        self.image_frame.place(relx=0.5, rely=0.48, anchor="center")
+        self.image_frame.place(relx=0.5, rely=0.5, anchor="center")
 
         self.distances_frame = tk.Frame(self.root)
         self.distances_frame.place_forget()
@@ -129,7 +129,7 @@ class FingerprintRecognitionApp:
 
         label_fingercode_1 = tk.Label(frame, image=resized_fingercode_1)
         label_fingercode_1.image = resized_fingercode_1
-        label_fingercode_1.grid(row=2, column=0, padx=(10, 150))
+        label_fingercode_1.grid(row=2, column=0, padx=(10, 150), pady=35)
 
         description_2 = tk.Label(frame, text=descr_2, font=("Helvetica", 12))
         description_2.grid(row=0, column=1, padx=(150, 10), pady=(5, 5))
@@ -140,7 +140,7 @@ class FingerprintRecognitionApp:
 
         label_fingercode_2 = tk.Label(frame, image=resized_fingercode_2)
         label_fingercode_2.image = resized_fingercode_2
-        label_fingercode_2.grid(row=2, column=1, padx=(150, 10))
+        label_fingercode_2.grid(row=2, column=1, padx=(150, 10), pady=35)
 
     def display_distances(self, clear_distance, encrypted_distance):
         self.distances_frame.place(relx=0.5, rely=0.35, anchor="center")
