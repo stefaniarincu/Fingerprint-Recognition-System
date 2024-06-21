@@ -55,15 +55,15 @@ class FingerprintRecognitionApp:
         self.root.after(0, self.see_match_enc)
     
     def see_match_enc(self):
-        result, clear_dist, enc_dist = self.fing_rec_syst.match()     
+        match_path, match_fingercodes_image, selected_fingercodes_image, clear_dist, enc_dist = self.fing_rec_syst.match()     
 
-        if result != '':
+        if match_path != '':
             self.result_label.config(text="Utilizator identificat", fg="black")
-            original_img = self.selected_image  # Imaginea originală selectată
-            match_img = cv.imread(result, cv.IMREAD_GRAYSCALE)  # Imaginea găsită
+            selected_img = self.selected_image  # Imaginea originală selectată
+            match_img = cv.imread(match_path, cv.IMREAD_GRAYSCALE)  # Imaginea găsită
 
-            self.display_images(original_img, match_img, self.image_frame, "Amprenta selectată", "Amprenta găsită în baza de date")
-            self.display_fingercode_images(self.fing_rec_syst.feature_extractor.fingercodes_images, self.image_frame)
+            #self.display_images( "Amprenta selectată", "Amprenta găsită în baza de date")
+            self.display_final_result(selected_img, match_img, selected_fingercodes_image, match_fingercodes_image, self.image_frame, "Amprenta selectată", "Amprenta găsită în baza de date")
             self.display_distances(clear_dist, enc_dist)
 
             self.reset_btn = tk.Button(self.root, text="Resetați", font=("Helvetica", 11), command=self.reset_interface)
@@ -89,6 +89,37 @@ class FingerprintRecognitionApp:
         img_label = tk.Label(frame, image=photo)
         img_label.image = photo  # Mențin o referință pentru a preveni garbage collection
         img_label.pack()
+
+    def display_final_result(self, img_1, img_2, fingercode_1, fingercode_2, frame, descr_1, descr_2):
+        resized_img_1 = ImageTk.PhotoImage(image=Image.fromarray(cv.resize(img_1, (350, 350))))
+        resized_img_2 = ImageTk.PhotoImage(image=Image.fromarray(cv.resize(img_2, (350, 350))))
+        resized_fingercode_1 = ImageTk.PhotoImage(image=Image.fromarray(cv.resize(fingercode_1, (500, 250))))
+        resized_fingercode_2 = ImageTk.PhotoImage(image=Image.fromarray(cv.resize(fingercode_2, (500, 250))))
+
+        for widget in frame.winfo_children():
+            widget.destroy()
+
+        description_1 = tk.Label(frame, text=descr_1, font=("Helvetica", 12))
+        description_1.grid(row=0, column=0, padx=(10, 10), pady=(10, 5))
+
+        label_1 = tk.Label(frame, image=resized_img_1)
+        label_1.image = resized_img_1
+        label_1.grid(row=1, column=0, padx=(10, 10), pady=10)
+
+        label_fingercode_1 = tk.Label(frame, image=resized_fingercode_1)
+        label_fingercode_1.image = resized_fingercode_1
+        label_fingercode_1.grid(row=2, column=0, padx=(10, 10), pady=10)
+
+        description_2 = tk.Label(frame, text=descr_2, font=("Helvetica", 12))
+        description_2.grid(row=0, column=1, padx=(10, 10), pady=(10, 5))
+
+        label_2 = tk.Label(frame, image=resized_img_2)
+        label_2.image = resized_img_2
+        label_2.grid(row=1, column=1, padx=(10, 10), pady=10)
+
+        label_fingercode_2 = tk.Label(frame, image=resized_fingercode_2)
+        label_fingercode_2.image = resized_fingercode_2
+        label_fingercode_2.grid(row=2, column=1, padx=(10, 10), pady=10)
 
     def display_images(self, img_1, img_2, frame, descr_1, descr_2):
         resized_img_1 = ImageTk.PhotoImage(image=Image.fromarray(cv.resize(img_1, (350, 350))))
@@ -128,7 +159,7 @@ class FingerprintRecognitionApp:
 
         for fingercode_img in fingercode_images:
             image = Image.fromarray(fingercode_img)
-            image.thumbnail((125, 125))
+            image.thumbnail((100, 100))
             photo = ImageTk.PhotoImage(image)
             photo_images.append(photo)
 

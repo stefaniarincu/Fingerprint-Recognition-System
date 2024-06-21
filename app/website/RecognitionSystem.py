@@ -36,7 +36,12 @@ class FingRecognitionSystem:
 
                 saved_clear_fingercode = np.frombuffer(row[3], dtype=np.float64)
                 clear_dist = np.sum(np.square(self.clear_fingercode - saved_clear_fingercode))
-                return row[1], clear_dist, enc_dist 
+
+                #saved_fingercode_image = self.feature_extractor.create_fingercode_image(self.feature_extractor.create_fingercodes_image(saved_clear_fingercode))
+                saved_fingercodes_image = self.feature_extractor.create_fingercode_image(saved_clear_fingercode)
+                selected_fingercodes_image = self.feature_extractor.create_fingercode_image(self.clear_fingercode)
+
+                return row[1], saved_fingercodes_image, selected_fingercodes_image, clear_dist, enc_dist 
             
         self.db.close_connection()    
         return '', 0, 0
