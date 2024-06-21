@@ -2,6 +2,7 @@ from FeatureExtractor import FeatureExtractor
 from EncryptionScheme import EncryptionScheme
 from Database import Database
 import numpy as np
+import cv2 as cv
 
 class FingRecognitionSystem:
     def __init__(self):
@@ -18,9 +19,9 @@ class FingRecognitionSystem:
     def determine_cropped_roi(self, fingerprint_img):
         self.cropped_roi = self.feature_extractor.get_cropped_roi(fingerprint_img)
         
-    def extract_fingercode(self):
+    def extract_fingercode_app(self):
         if len(self.cropped_roi) != 0:
-            self.clear_fingercode = self.feature_extractor.process_image(self.cropped_roi)
+            self.clear_fingercode = self.feature_extractor.continue_process()
             self.enc_fingercode = self.enc_scheme.encrypt_fingercode(self.clear_fingercode)
 
     def match(self):

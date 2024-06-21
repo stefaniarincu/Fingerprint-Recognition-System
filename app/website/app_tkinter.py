@@ -9,20 +9,17 @@ class FingerprintRecognitionApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Sistem de recunoaștere pe baza amprentei")
-        self.root.geometry("1200x700")  # Adjust window size to be wider than tall
+        self.root.state("zoom")  # Adjust window size to be wider than tall
         
-        # Create frame to hold images and results
         self.image_frame = tk.Frame(self.root)
         self.image_frame.place(relx=0.5, rely=0.4, anchor="center")
 
         self.distances_frame = tk.Frame(self.root)
         self.distances_frame.place_forget()
         
-        # Create a button to trigger the file dialog
         self.select_btn = tk.Button(self.root, text="Selectați amprenta", font=("Helvetica", 10), command=self.open_image)
         self.select_btn.place(relx=0.5, rely=0.3, anchor="center")
         
-        # Initialize recognition system
         self.fing_rec_syst = FingRecognitionSystem()
         self.selected_image = None 
 
@@ -35,21 +32,25 @@ class FingerprintRecognitionApp:
             
             self.fing_rec_syst.find_center_point(fingerprint_img)
             self.select_btn.place_forget()
-            self.root.after(0, self.display_image, self.fing_rec_syst.feature_extractor.center_point_image, self.image_frame, "Centrul evidențiat în amprenta selectată")
+            self.display_image(self.fing_rec_syst.feature_extractor.center_point_image, self.image_frame, "Centrul evidențiat în amprenta selectată")
+            self.root.update()
+            
+            self.root.after(0, self.get_roi, self.selected_image)
 
-            threading.Thread(target=self.get_roi, args=(self.selected_image,)).start()
-    
     def get_roi(self, image):
         self.fing_rec_syst.determine_cropped_roi(image)
+
         if self.fing_rec_syst.cropped_roi.shape[0] != 0:
-            self.root.after(0, self.display_images, self.fing_rec_syst.feature_extractor.center_point_image, self.fing_rec_syst.feature_extractor.sectors_img, self.image_frame, "Centrul evidențiat în amprenta selectată", "Sectoare evidențiate în amprenta selectată")
-            threading.Thread(target=self.extract_and_match_fingercode).start()
+            self.display_images(self.fing_rec_syst.feature_extractor.center_point_image, self.fing_rec_syst.feature_extractor.sectors_img, self.image_frame, "Centrul evidențiat în amprenta selectată", "Sectoare evidențiate în amprenta selectată")
+            self.root.update()
+
+            self.root.after(0, self.extract_and_match_fingercode)
         else:
             self.root.after(0, messagebox.showerror, "Eroare", "Amprentă plasată incorect! Selectați altă imagine.")
-            self.root.after(0, self.reset_interface)
+            self.root.after(3000, self.reset_interface)
 
     def extract_and_match_fingercode(self):
-        self.fing_rec_syst.extract_fingercode()
+        self.fing_rec_syst.extract_fingercode_app()
         self.root.after(0, self.see_match_enc)
     
     def see_match_enc(self):

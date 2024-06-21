@@ -1,8 +1,6 @@
 import numpy as np
 import cv2 as cv
 import math
-import matplotlib.pyplot as plt
-from matplotlib.patches import Circle
 
 class FeatureExtractor:
     def __init__(self):
@@ -17,6 +15,7 @@ class FeatureExtractor:
         self.x_center = None
         self.y_center = None
 
+        self.cropped_roi = None
         self.sectors_img = None
 
         self.sectors = None
@@ -266,20 +265,17 @@ class FeatureExtractor:
         return fingercode_image
     
     def get_cropped_roi(self, img):
-        cropped_roi = self.crop_roi(img)
+        self.cropped_roi = self.crop_roi(img)
         
-        if cropped_roi.shape[0] != 0:
+        if self.cropped_roi.shape[0] != 0:
             self.divide_into_sectors()
             self.plot_circles_and_lines(img)
-            return cropped_roi
-        else:
-            np.array([])
-    
-    def process_image(self, cropped_roi):
-        #cropped_roi = add_mask(points_each_sector, cropped_roi)
-            
-        norm_cropped_roi = self.normalize_sectors(cropped_roi)
         
+        return self.cropped_roi
+
+    def continue_process(self):
+        norm_cropped_roi = self.normalize_sectors(self.cropped_roi)
+            
         self.fingercodes = []
         self.fingercodes_images = []
         self.filtered_images = []
@@ -303,3 +299,36 @@ class FeatureExtractor:
 
         clear_fingercode = np.array([code for fingercode in self.fingercodes for code in fingercode])
         return clear_fingercode
+        
+    def process_image(self, param_image):
+        self.find_reference_point(param_image)
+        self.cropped_roi = self.crop_roi(param_image)
+        #self.cropped_roi = add_mask(points_each_sector, self.cropped_roi)
+
+        if self.cropped_roi.shape[0] != 0:
+            self.divide_into_sectors()
+            norm_cropped_roi = self.normalize_sectors(self.cropped_roi)
+            
+            self.fingercodes = []
+            self.filtered_images = []
+
+            for idx in range(self.nr_filters):
+                gabor_filter = self.get_even_symmetric_gabor_filter(idx)
+
+                '''gabor_filter_print = (gabor_filter - np.min(gabor_filter, axis=(0, 1))) /  (np.max(gabor_filter, axis=(0, 1)) -  np.min(gabor_filter, axis=(0, 1)))
+                cv.imshow("gabor 2D", (gabor_filter_print * 255.0).astype(np.uint8))
+                cv.waitKey()
+                cv.destroyAllWindows()'''
+
+                filtered_roi = self.apply_filter(norm_cropped_roi.copy(), gabor_filter)
+                #filtered_roi = self.add_mask(filtered_roi)
+                self.filtered_images.append(filtered_roi)
+                
+                fingercode = self.determine_fingercode(filtered_roi)
+                #fingercode = self.add_mask(fingercode)
+                self.fingercodes.append(fingercode)
+
+            clear_fingercode = np.array([code for fingercode in self.fingercodes for code in fingercode])
+            return clear_fingercode
+        
+        return []
