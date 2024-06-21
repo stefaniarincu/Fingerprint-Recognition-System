@@ -17,7 +17,6 @@ class FeatureExtractor:
         self.cropped_roi = None
         self.sectors_img = None
         self.sectors = None
-        #self.fingercode_image = None
 
     def find_reference_point(self, param_img):
         block_size = 8    
@@ -250,24 +249,6 @@ class FeatureExtractor:
 
         return fingercode_vector
     
-    def create_fingercode_image(self, param_fingercode):
-        num_images = len(param_fingercode) // self.nr_sectors
-        fingercodes_image = np.zeros((2 * self.h_roi, 4 * self.h_roi), dtype=np.uint8)
-
-        for i in range(num_images):
-            row = i // 4
-            col = i % 4
-            fingercode_image = np.ones((self.h_roi, self.h_roi), dtype=np.uint8) * 255.0
-            fingercode = param_fingercode[i * self.nr_sectors: (i + 1) * self.nr_sectors]
-            
-            for idx in range(len(self.sectors)):
-                for point in self.sectors[idx]:
-                    fingercode_image[point[0], point[1]] = fingercode[idx]
-            
-            fingercodes_image[row * self.h_roi: (row + 1) * self.h_roi, col * self.h_roi: (col + 1) * self.h_roi] = fingercode_image
-        
-        return fingercodes_image
-    
     def get_cropped_roi(self, img):
         self.cropped_roi = self.crop_roi(img)
         
@@ -299,11 +280,27 @@ class FeatureExtractor:
             fingercode = self.determine_fingercode(filtered_roi)
             #fingercode = self.add_mask(fingercode)
             self.fingercodes.append(fingercode)
-            #fingercodes_images.append(self.create_fingercodes_image(fingercode))
 
         clear_fingercode = np.array([code for fingercode in self.fingercodes for code in fingercode])
-        #self.fingercode_image = self.create_fingercode_image(clear_fingercode)
         return clear_fingercode
+    
+    def create_fingercode_image(self, param_fingercode):
+        num_images = len(param_fingercode) // self.nr_sectors
+        fingercodes_image = np.zeros((2 * self.h_roi, 4 * self.h_roi), dtype=np.uint8)
+
+        for i in range(num_images):
+            row = i // 4
+            col = i % 4
+            fingercode_image = np.ones((self.h_roi, self.h_roi), dtype=np.uint8) * 255.0
+            fingercode = param_fingercode[i * self.nr_sectors: (i + 1) * self.nr_sectors]
+            
+            for idx in range(len(self.sectors)):
+                for point in self.sectors[idx]:
+                    fingercode_image[point[0], point[1]] = fingercode[idx]
+            
+            fingercodes_image[row * self.h_roi: (row + 1) * self.h_roi, col * self.h_roi: (col + 1) * self.h_roi] = fingercode_image
+        
+        return fingercodes_image
         
     def process_image(self, param_image):
         self.find_reference_point(param_image)
