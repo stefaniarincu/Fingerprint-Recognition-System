@@ -262,7 +262,6 @@ class FeatureExtractor:
         norm_cropped_roi = self.normalize_sectors(self.cropped_roi)
             
         self.fingercodes = []
-        fingercodes_images = []
         self.filtered_images = []
 
         for idx in range(self.nr_filters):
