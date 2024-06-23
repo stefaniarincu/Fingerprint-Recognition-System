@@ -64,3 +64,8 @@ class FingRecognitionSystem:
                     f_clear.write(f"{os.path.basename(all_rows[i][1])}, {os.path.basename(all_rows[j][1])}, {clear_dist} \n")
 
         self.db.close_connection()    
+
+'''
+RS = FingRecognitionSystem()
+RS.compare_all()
+'''
