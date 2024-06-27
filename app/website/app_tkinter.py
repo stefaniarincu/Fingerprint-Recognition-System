@@ -143,13 +143,16 @@ class FingerprintRecognitionApp:
         label_fingercode_2.grid(row=2, column=1, padx=(150, 10), pady=35)
 
     def display_distances(self, clear_distance, encrypted_distance):
-        self.distances_frame.place(relx=0.5, rely=0.35, anchor="center")
+        self.distances_frame.place(relx=0.5, rely=0.32, anchor="center")
         
-        clear_distance_label = tk.Label(self.distances_frame, text=f"Distanța în domeniul clar: {clear_distance}", font=("Helvetica", 12), fg='black')
+        clear_distance_label = tk.Label(self.distances_frame, text=f"    Distanța în domeniul clar:  {clear_distance:.3f}", font=("Helvetica", 12), fg='black')
         clear_distance_label.pack()
         
-        encrypted_distance_label = tk.Label(self.distances_frame, text=f"Distanța în domeniul criptat: {encrypted_distance}", font=("Helvetica", 12), fg='black')
+        encrypted_distance_label = tk.Label(self.distances_frame, text=f"Distanța în domeniul criptat: {encrypted_distance:.3f}", font=("Helvetica", 12), fg='black')
         encrypted_distance_label.pack() 
+
+        diff_label = tk.Label(self.distances_frame, text=f"\nDiferența dintre distanțe: {(encrypted_distance - clear_distance):.3f}", font=("Helvetica", 12), fg='black')
+        diff_label.pack() 
 
     def reset_interface(self):
         for widget in self.image_frame.winfo_children():
