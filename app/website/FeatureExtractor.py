@@ -28,7 +28,7 @@ class FeatureExtractor:
         blurred_img = clahe.apply(blurred_img)
         
         gradient_x, gradient_y = np.gradient(blurred_img)    
-        nominator = (gradient_x + 1j * gradient_y)** 2   
+        nominator = (gradient_x + 1j * gradient_y)**2   
         denominator = np.abs(nominator)
 
         grad_field = np.ones_like(param_img, dtype=complex)
@@ -38,7 +38,7 @@ class FeatureExtractor:
                     grad_field[i][j] = nominator[i][j] / denominator[i][j]
 
         grid_x, grid_y = np.meshgrid(np.arange(-16, 17), np.arange(-16, 17))
-        exponent = np.exp(-(grid_x ** 2 + grid_y ** 2) / (2 * np.sqrt(60) ** 2))
+        exponent = np.exp(-(grid_x**2 + grid_y**2) / (2 * np.sqrt(60)**2))
         core_filter = exponent * (grid_x + 1j * grid_y)
 
         img_height, img_width = grad_field.shape
