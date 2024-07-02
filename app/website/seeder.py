@@ -9,7 +9,7 @@ enc_scheme = EncryptionScheme()
 db = Database()
 feature_extract = FeatureExtractor()
 
-director_path = "C:/Users/admin/Downloads/CrossMatch_Sample_DB - Copy - Copy"#"D:/Fingerprints""D:/Amprente_test/CrossMatch_Sample_DB - Copy - Copy"
+director_path = "D:/Fingerprints"#"C:/Users/admin/Downloads/CrossMatch_Sample_DB - Copy - Copy""D:/Amprente_test/CrossMatch_Sample_DB - Copy - Copy"
 image_extension = '*.tif'
 images_path = os.path.join(director_path, image_extension)
 files = sorted(glob.glob(images_path))

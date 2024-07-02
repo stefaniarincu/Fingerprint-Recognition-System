@@ -160,11 +160,15 @@ class FingerprintRecognitionApp:
         
         for widget in self.distances_frame.winfo_children():
             widget.destroy()
+
+        self.distances_frame.place_forget()
         
         self.image_frame.configure(borderwidth=0, relief="flat")
         self.select_btn.place(relx=0.5, rely=0.3, anchor="center")
 
         self.result_label.config(text="")
+        #self.result_label.place_forget()
+
         self.fing_rec_syst = FingRecognitionSystem()
         self.selected_image = None 
         
