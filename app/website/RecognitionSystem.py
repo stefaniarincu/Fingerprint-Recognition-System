@@ -63,9 +63,45 @@ class FingRecognitionSystem:
                     clear_dist = np.sum(np.square(saved_clear_fingercode_1 - saved_clear_fingercode_2))
                     f_clear.write(f"{os.path.basename(all_rows[i][1])}, {os.path.basename(all_rows[j][1])}, {clear_dist} \n")
 
-        self.db.close_connection()    
+        self.db.close_connection()   
+        
+    def find_user(self, fingerprint_image):
+        self.clear_fingercode = self.feature_extractor.process_image(fingerprint_image)
+
+        if len(self.clear_fingercode) != 0:
+            self.enc_fingercode = self.enc_scheme.encrypt_fingercode(self.clear_fingercode)
+
+            all_rows = self.db.get_all()
+
+            for row in all_rows:
+                saved_enc_fingercode = bytes(row[2]) 
+                enc_dist = self.enc_scheme.calculate_euclidean_dist(self.enc_fingercode, saved_enc_fingercode)
+                
+                if self.enc_scheme.apply_threshold(enc_dist):
+                    self.db.close_connection()
+
+                    saved_clear_fingercode = np.frombuffer(row[3], dtype=np.float64)
+                    clear_dist = np.sum(np.square(self.clear_fingercode - saved_clear_fingercode))
+
+                    saved_fingercodes_image = self.feature_extractor.create_fingercode_image(saved_clear_fingercode)
+                    selected_fingercodes_image = self.feature_extractor.create_fingercode_image(self.clear_fingercode)
+
+                    return row[1], saved_fingercodes_image, selected_fingercodes_image, clear_dist, enc_dist 
+                
+            self.db.close_connection()    
+            return 'no user', np.array([]), np.array([]), 0, 0 
+
+        return 'bad placement', np.array([]), np.array([]), 0, 0  
+
+
 
 '''
 RS = FingRecognitionSystem()
-RS.compare_all()
+
+import cv2 as cv
+fingerprint_img = cv.imread("D:/Teste_amprente/017_3_6.tif", cv.IMREAD_GRAYSCALE)
+#fingerprint_img = cv.imread("D:/Teste_amprente/022_6_2.tif", cv.IMREAD_GRAYSCALE)
+#fingerprint_img = cv.imread("D:/Teste_amprente/047_5_1.tif", cv.IMREAD_GRAYSCALE)
+print(RS.find_user(fingerprint_img))
 '''
+
