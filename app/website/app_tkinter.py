@@ -83,7 +83,7 @@ class FingerprintRecognitionApp:
         for widget in frame.winfo_children():
             widget.destroy()
 
-        image_description = tk.Label(frame, text=descr, font=("Helvetica", 12))
+        image_description = tk.Label(frame, text=descr, font=("Helvetica", 14))
         image_description.pack(pady=(10, 5))
 
         img_label = tk.Label(frame, image=photo)
@@ -97,14 +97,14 @@ class FingerprintRecognitionApp:
         for widget in frame.winfo_children():
             widget.destroy()
 
-        description_1 = tk.Label(frame, text=descr_1, font=("Helvetica", 12))
+        description_1 = tk.Label(frame, text=descr_1, font=("Helvetica", 14))
         description_1.grid(row=0, column=0, padx=(10, 100), pady=(10, 5))  
 
         label_1 = tk.Label(frame, image=resized_img_1)
         label_1.image = resized_img_1  
         label_1.grid(row=1, column=0, padx=(10, 100), pady=10)  
 
-        description_2 = tk.Label(frame, text=descr_2, font=("Helvetica", 12))
+        description_2 = tk.Label(frame, text=descr_2, font=("Helvetica", 14))
         description_2.grid(row=0, column=1, padx=(100, 10), pady=(10, 5)) 
 
         label_2 = tk.Label(frame, image=resized_img_2)
@@ -120,7 +120,7 @@ class FingerprintRecognitionApp:
         for widget in frame.winfo_children():
             widget.destroy()
 
-        description_1 = tk.Label(frame, text=descr_1, font=("Helvetica", 12))
+        description_1 = tk.Label(frame, text=descr_1, font=("Helvetica", 14))
         description_1.grid(row=0, column=0, padx=(10, 150), pady=(5, 5))
 
         label_1 = tk.Label(frame, image=resized_img_1)
@@ -131,7 +131,7 @@ class FingerprintRecognitionApp:
         label_fingercode_1.image = resized_fingercode_1
         label_fingercode_1.grid(row=2, column=0, padx=(10, 150), pady=35)
 
-        description_2 = tk.Label(frame, text=descr_2, font=("Helvetica", 12))
+        description_2 = tk.Label(frame, text=descr_2, font=("Helvetica", 14))
         description_2.grid(row=0, column=1, padx=(150, 10), pady=(5, 5))
 
         label_2 = tk.Label(frame, image=resized_img_2)
@@ -145,13 +145,13 @@ class FingerprintRecognitionApp:
     def display_distances(self, clear_distance, encrypted_distance):
         self.distances_frame.place(relx=0.5, rely=0.32, anchor="center")
         
-        clear_distance_label = tk.Label(self.distances_frame, text=f"    Distanța în domeniul clar:  {clear_distance:.3f}", font=("Helvetica", 12), fg='black')
+        clear_distance_label = tk.Label(self.distances_frame, text=f"   Distanța în domeniul clar:  {clear_distance:.3f}", font=("Helvetica", 14), fg='black')
         clear_distance_label.pack()
         
-        encrypted_distance_label = tk.Label(self.distances_frame, text=f"Distanța în domeniul criptat: {encrypted_distance:.3f}", font=("Helvetica", 12), fg='black')
+        encrypted_distance_label = tk.Label(self.distances_frame, text=f"Distanța în domeniul criptat: {encrypted_distance:.3f}", font=("Helvetica", 14), fg='black')
         encrypted_distance_label.pack() 
 
-        diff_label = tk.Label(self.distances_frame, text=f"\nDiferența dintre distanțe: {(encrypted_distance - clear_distance):.3f}", font=("Helvetica", 12), fg='black')
+        diff_label = tk.Label(self.distances_frame, text=f"\nDiferența dintre distanțe: {(encrypted_distance - clear_distance):.3f}", font=("Helvetica", 14), fg='black')
         diff_label.pack() 
 
     def reset_interface(self):
