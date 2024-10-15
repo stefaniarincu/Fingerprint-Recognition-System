@@ -9,7 +9,7 @@ enc_scheme = EncryptionScheme()
 db = Database()
 feature_extract = FeatureExtractor()
 
-director_path = "D:/Fingerprints"#"C:/Users/admin/Downloads/CrossMatch_Sample_DB - Copy - Copy""D:/Amprente_test/CrossMatch_Sample_DB - Copy - Copy"
+director_path = "D:/Demo imgs/Demo_fingerprints"#"D:/Fingerprints"#"C:/Users/admin/Downloads/CrossMatch_Sample_DB - Copy - Copy""D:/Amprente_test/CrossMatch_Sample_DB - Copy - Copy"
 image_extension = '*.tif'
 images_path = os.path.join(director_path, image_extension)
 files = sorted(glob.glob(images_path))
@@ -25,4 +25,3 @@ for i in range(len(files)):
         db.insert_into_table(i, files[i], enc_fingercode, clear_fingercode.tobytes())
 
 db.close_connection()
-
