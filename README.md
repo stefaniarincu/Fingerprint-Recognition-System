@@ -79,7 +79,7 @@ Alternatively, iif you prefer not to use Anaconda, you will need to manually ins
 
 ### Database Setup
 
-To create the database, ensure you have Docker installed. First, create an `.env` file. Then, run the following commands to set up the database inside a Docker container using the configurations specified in the `docker-compose.yml`, `init.sql`, and `.env` files:
+To create the database, ensure you have Docker installed. First, create an `.env` file and place it inside the `app` folder. Then, run the following commands to set up the database inside a Docker container using the configurations specified in the [`app/docker-compose.yml`](app/docker-compose.yml), [`app/init.sql`](app/init.sql), and `app/.env` files:
 ```
 cd app
 docker-compose build db; docker-compose up db
