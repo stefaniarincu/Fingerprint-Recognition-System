@@ -51,21 +51,20 @@ The presented system uses a well-structured algorithm to extract fingerprint fea
       </p>
 
       The region of interest is defined by a collection of sectors $S_i$. The formula for each sector is:
-      $$
-            S_i = \left\{(x, y) \mid d(R_i + 1) \leq \sqrt{(x - x_c)^2 + (y - y_c)^2} < d(R_i + 2), \theta_i \leq \tan^{-1} \left( \frac{y - y_c}{x - x_c} \right) < \theta_{i+1} \right\}
-      $$
-      where $R_i = \left\lfloor \frac{i}{n_r} \right\rfloor$ and $\theta_i = \frac{2\pi}{n_r} \cdot (i \mod n_r)$. Here, $ \left\lfloor \frac{i}{n_r} \right\rfloor$ is the integer part of dividing $i$ by $n_r$, and $i \mod n_r$ represents the remainder of this division.
-Therefore, In this project, I used a total of $S = n_b \cdot n_r = 5 \cdot 16 = 80$ sectors for feature extraction.
 
-6.  **Normalization**
+       $\ \ \ \ \ \ \ \ \ \ \ \ \ S_i = \lbrace (x, y) \mid d(R_i + 1) \leq \sqrt{(x - x_c)^2 + (y - y_c)^2} < d(R_i + 2), \theta_i \leq \tan^{-1} \left( \frac{y - y_c}{x - x_c} \right) < \theta_{i+1} \rbrace$
+
+      where $R_i = \left\lfloor \frac{i}{n_r} \right\rfloor$ and $\theta_i = \frac{2\pi}{n_r} \cdot (i \mod n_r)$. Here, $\left\lfloor \frac{i}{n_r} \right\rfloor$ is the integer part of dividing $i$ by $n_r$, and $i \mod n_r$ represents the remainder of this division. Therefore, In this project, I used a total of $S = n_b \cdot n_r = 5 \cdot 16 = 80$ sectors for feature extraction.
+
+7.  **Normalization**
 
       Each sector is then **normalized** by adjusting the grayscale intensity of the pixels. This ensures uniformity across the different regions of the fingerprint, preventing variations in brightness from affecting the feature extraction process.
 
-7.  **Gabor Filter Application**
+8.  **Gabor Filter Application**
 
       I applied **Gabor filters** to each sector of the fingerprint, as they are well-known for their ability to **capture texture information**, such as ridges and valleys in various orientations. In this project, I used **8 Gabor filters**, each oriented in a different direction. This process results in a series of filtered images that highlight distinct patterns in the fingerprint's structure.
 
-8.  **Feature Vector Creation (FingerCode)**
+9.  **Feature Vector Creation (FingerCode)**
 
       For each sector, the algorithm computes statistical features, such as the mean deviation from the average intensity. his generates a **640-dimensional vector** (based on 8 orientations and 80 sectors), forming the **FingerCode**. This compact representation captures the most distinctive and discriminative features of the fingerprint.
 
