@@ -44,7 +44,18 @@ The presented system uses a well-structured algorithm to extract fingerprint fea
 
 5.  **Division into Sectors**
 
-      Starting from the central point, the fingerprint is divided into multiple **concentric circles**, and each circle is split into **sectors**. This division helps capture both **local and global features** of the fingerprint. In this project, I used 5 concentric circles, dividing each into 16 regions, resulting in a total of **80 sectors**.
+      Around the reference point detected above, I drew $6$ **concentric circles**. Since the innermost circle around the reference point contains very few pixels, it is not used for extracting distinctive features, the number of bands I used is $n_b = 5$. These circles represent the region of interest from which the **local discriminative information** will be extracted. In the image below, the contours of the sectors are marked with red lines, while the yellow **X** indicates the central point of the fingerprint. The distance between each two circles is $d = 20$, and each circle is divided into $n_r = 16$ regions.
+
+      <p align="center">
+            <img src="./readme images/center_and_sectors.png" width="150" alt="Fingerprint with center and sectors" />
+      </p>
+
+      The region of interest is defined by a collection of sectors $S_i$. The formula for each sector is:
+      $$
+            S_i = \left\{(x, y) \mid d(R_i + 1) \leq \sqrt{(x - x_c)^2 + (y - y_c)^2} < d(R_i + 2), \theta_i \leq \tan^{-1} \left( \frac{y - y_c}{x - x_c} \right) < \theta_{i+1} \right\}
+      $$
+      where $R_i = \left\lfloor \frac{i}{n_r} \right\rfloor$ and $\theta_i = \frac{2\pi}{n_r} \cdot (i \mod n_r)$. Here, $ \left\lfloor \frac{i}{n_r} \right\rfloor$ is the integer part of dividing $i$ by $n_r$, and $i \mod n_r$ represents the remainder of this division.
+Therefore, In this project, I used a total of $S = n_b \cdot n_r = 5 \cdot 16 = 80$ sectors for feature extraction.
 
 6.  **Normalization**
 
