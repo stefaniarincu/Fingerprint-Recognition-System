@@ -61,7 +61,7 @@ Then, I established a minimum variance **threshold** to retain only the signific
 To standardize the contour of the fingerprint and eliminate residual noise in the background, I performed several **morphological transformations** on the resulting binary mask. First, I applied a **morphological closing operator** to eliminate remaining gaps within the fingerprint, represented by black pixels, without altering its original contour. Then, I performed an **erosion operation** to remove background noise, represented by white pixels. Knowing that the central point of a fingerprint typically does not extend to its outer edges, the erosion operator also serves to thin the fingerprint contour.
 
 <p align="center">
-  <img src="./readme images/applied_morphological_operators.png" width="400" alt="Applied morphological operators" />
+  <img src="./readme images/applied_morphological_operators.png" width="500" alt="Applied morphological operators" />
 
 By overlaying the variance mask obtained after applying all morphological operators over the filtered image presented at the previous step, I produced the final segmented fingerprint image.
 
@@ -128,20 +128,53 @@ $$
 where $M_i$ is the mean intensity for sector $i$. Each $D_i$ value will be a component of the feature vector. Ultimately, this vector will contain $n_f \cdot (n_b \cdot n_r) = n_f \cdot n_s = 8 \cdot 80 = 640$ elements, where $n_f$ is the number of filters, $n_b$ is the number of concentric bands, $n_r$ is the number of regions in each band, and $n_s$ is the number of sectors.
 
 <p align="center">
-      <img src="./readme images/fingercodes.png" width="400" alt="FinerCodes" />
+      <img src="./readme images/fingercodes.png" width="400" alt="FingerCodes" />
 </p>
 
 In the image above, the eight *FingerCodes* obtained are intuitively represented by coloring an entire sector based on the mean absolute deviation corresponding to each in the feature vector. This compact representation allowed the use of homomorphic encryption, enabling the matching process in the encrypted domain through Euclidean distance calculation.
 
 ## Homomorphic Encryption
-The resulting feature vector is **homomorphically encrypted**, and the system performs matching in the encrypted domain by calculating the **squared Euclidean distance** between encrypted vectors.
+The resulting feature vector is **homomorphically encrypted**, allowing the system to perform matching directly in the encrypted domain. Since the **CKKS scheme** cannot compute the square root of a number, I used the **square of the Euclidean distance** as the similarity metric. 
+
+For two n-dimensional vectors $\vec{a} = (a_1, a_2, \ldots, a_n)$ and $\vec{b} = (b_1, b_2, \ldots, b_n)$, the squared Euclidean distance is calculated using the formula:
+ 
+$$
+DE(a, b) = \sum_{i=1}^{n}{(a_i - b_i)^2}
+$$
 
 ## Results
-To test the performance of the system, I used a dataset of 205 fingerprint images selected from the archive available [here](https://neurotechnology.com/download/CrossMatch_Sample_DB.zip).
+To demonstrate that using homomorphic encryption does not impact the performance of a fingerprint recognition system, I implemented a secure demonstrative system, presented in this project. To test its performance, I used a dataset of 205 fingerprint images from 43 different people, selected from the archive available [here](https://neurotechnology.com/download/CrossMatch_Sample_DB.zip). For each fingerprint, I extracted the feature vector based on the algorithm described above and to determine the similarity between two FingerCodes, I used the squared Euclidean distance as the metric. 
 
-For the proposed system, I achieved a **0% False Acceptance Rate (FAR)** and **1.29% False Rejection Rate (FRR)**.
+A crucial step in developing a biometric system is choosing the decision threshold. This threshold determines if the similarity between two fingerprints is low enough to conclude they belong to the same person. For security reasons, I chose a threshold that minimizes unauthorized access, even if it risks denying access to an authorized entity. In the image below I present the results obtained after testing the proposed system. The algorithm performed $C_{205}^{2} = 20910$ comparisons to assess the similarity between each pair of fingerprints, using a threshold of $\textbf{805000}$. This value was determined to maintain a **false acceptance rate (FAR)** of $0\%$. The image also shows that the number of false negatives (when two fingerprints from the same person are incorrectly identified as different) is very low compared to the correct matches. Specifically, the **false rejection rate (FRR)** is calculated as:
 
-Additionally, the maximum difference in the distances obtained between two fingerprints in the clear and encrypted domains was **1.32**.
+$$
+\text{FRR} = \frac{\text{false\_rejects}}{\text{false\_rejects} + \text{correct\_accepts}} \cdot 100 = \frac{6}{6+457} \cdot 100 = 1.29\%
+$$
+
+<p align="center">
+      <img src="./readme images/confusion_matrix.png" width="300" alt="Confusion matrix" />
+</p>
+
+In the image below, I presented the distribution of the squared Euclidean distance in the encrypted domain. The pink bars represent distances between fingerprints of the same individual, while the blue bars indicate distances between different individuals, along with the threshold affecting the system's decision. 
+
+<p align="center">
+      <img src="./readme images/distrib_dist.png" width="300" alt="Distances distribution" />
+</p>
+
+The next image provides a clearer view of the categories of fingerprint similarity. The dotted line marks the chosen threshold ($805000$) to achieve a $0\%$ FAR. I also highlighted the six instances where two fingerprints were incorrectly classified as belonging to different people.
+
+<p align="center">
+      <img src="./readme images/false_neg_int.png" width="300" alt="Intersection of false negatives" />
+</p>
+
+To showcase the properties of homomorphic encryption, I computed the similarity between all $205$ feature vectors, both in the **encrypted domain** and the **clear domain**. The differences in distances obtained from both domains are minimal, resulting in almost identical histograms. Thus, in the image below, I presented the distribution of the differences between the distances in the encrypted and clear domains, specifically showing $dist_{encrypted} - dist_{clear}$.
+
+<p align="center">
+      <img src="./readme images/distrib_diff.png" width="300" alt="Distribution of differences" />
+</p>
+
+As seen, the differences between distances from the encrypted and clear domains are negligible compared to the actual values of the distances. It is important to note that using very large numbers in the CKKS scheme can negatively impact precision due to increased noise. However, this maximum difference of $1.32$, relative to $99 \cdot 10^6$ (the maximum distance obtained in the encrypted domain), does not affect the performance of the biometric system presented. Therefore, it is evident that homomorphic encryption ensures the security of a biometric system while maintaining its accuracy and reliability.
+
 
 ## Future Directions
 - Improve fingerprint rotation handling in the feature extraction process.
