@@ -36,7 +36,15 @@ To reduce noise and enhance contrast in the fingerprint images, making the patte
 
 #### Fingerprint Contour Detection
 
-Knowing that a fingerprint is characterized by the uniform pattern of intersecting ridges and valleys, I used the **gradient** to capture the quick transitions from white (valleys) to black (ridges) within the fingerprint image, highlighting the area of interest. 
+Knowing that a fingerprint is characterized by the uniform pattern of intersecting ridges and valleys, I used the properties of the **gradients** to capture the quick transitions from white (valleys) to black (ridges) within the fingerprint image, highlighting the area of interest. 
+
+<p align="center">
+  <img src="./readme images/gradient_x.png" width="200" alt="Horizontal gradient of a fingerprint image" />
+  <img src="./readme images/gradient_y.png" width="200" alt="Vertical gradient of a fingerprint image" />
+</p>
+<p align="center">
+  <i>The horizontal and vertical gradients of a fingerprint image</i>
+</p>
 
 After the preprocessing step, I calculated the **gradients** of the fingerprint image in both the **horizontal** ($G_x$) and **vertical** ($G_y$) directions. Using these values, I computed the **orientation field** with complex values ($A = (G_x + i \cdot G_y)^2$) and its absolute magnitude ($B = |A|$) by transforming the data into the frequency domain.
 
@@ -103,10 +111,10 @@ To prevent errors, the algorithm handles cases where $V_i = 0$ by setting $N_i(x
 
 ### 5. Gabor Filter Application
 
-I applied **Gabor filters** to each sector of the fingerprint, as they are well-known for their ability to **capture texture information**, such as ridges and valleys in various orientations. In this project, I used $n_f = 8$ Gabor filters, each oriented in a different direction ($\theta_i \in \{ 0^\circ, 22.5^\circ, 45^\circ, 67.5^\circ, 90^\circ, 112.5^\circ, 135^\circ, 157.5^\circ \}$). This process results in a series of filtered images that highlight distinct patterns in the fingerprint's structure.
+I applied **Gabor filters** to each sector of the fingerprint, as they are well-known for their ability to **capture texture information**, such as ridges and valleys in various orientations. In this project, I used $n_f = 8$ Gabor filters, each oriented in a different direction ($\theta_i \in \lbrace 0^\circ, 22.5^\circ, 45^\circ, 67.5^\circ, 90^\circ, 112.5^\circ, 135^\circ, 157.5^\circ \rbrace$). This process results in a series of filtered images that highlight distinct patterns in the fingerprint's structure.
 
 <p align="center">
-      <img src="./readme images/img_gabor.png" width="300" alt="Gabor filters" />
+      <img src="./readme images/img_gabor.png" width="400" alt="Gabor filters" />
 </p>
 
 ### 6. Creating the Feature Vector (FingerCode)
@@ -120,7 +128,7 @@ $$
 where $M_i$ is the mean intensity for sector $i$. Each $D_i$ value will be a component of the feature vector. Ultimately, this vector will contain $n_f \cdot (n_b \cdot n_r) = n_f \cdot n_s = 8 \cdot 80 = 640$ elements, where $n_f$ is the number of filters, $n_b$ is the number of concentric bands, $n_r$ is the number of regions in each band, and $n_s$ is the number of sectors.
 
 <p align="center">
-      <img src="./readme images/fingercodes.png" width="300" alt="FinerCodes" />
+      <img src="./readme images/fingercodes.png" width="400" alt="FinerCodes" />
 </p>
 
 In the image above, the eight *FingerCodes* obtained are intuitively represented by coloring an entire sector based on the mean absolute deviation corresponding to each in the feature vector. This compact representation allowed the use of homomorphic encryption, enabling the matching process in the encrypted domain through Euclidean distance calculation.
