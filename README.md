@@ -148,7 +148,7 @@ To demonstrate that using homomorphic encryption does not impact the performance
 A crucial step in developing a biometric system is choosing the decision threshold. This threshold determines if the similarity between two fingerprints is low enough to conclude they belong to the same person. For security reasons, I chose a threshold that minimizes unauthorized access, even if it risks denying access to an authorized entity. In the image below I present the results obtained after testing the proposed system. The algorithm performed $C_{205}^{2} = 20910$ comparisons to assess the similarity between each pair of fingerprints, using a threshold of $\textbf{805000}$. This value was determined to maintain a **false acceptance rate (FAR)** of $0\%$. The image also shows that the number of false negatives (when two fingerprints from the same person are incorrectly identified as different) is very low compared to the correct matches. Specifically, the **false rejection rate (FRR)** is calculated as:
 
 $$
-\text{FRR} = \frac{\text{false\_rejects}}{\text{false\_rejects} + \text{correct\_accepts}} \cdot 100 = \frac{6}{6+457} \cdot 100 = 1.29\%
+\text{FRR} = \frac{\text{false rejected}}{\text{false rejected} \ + \ \text{correct accepted}} \cdot 100 = \frac{6}{6+457} \cdot 100 = 1.29\%
 $$
 
 <p align="center">
