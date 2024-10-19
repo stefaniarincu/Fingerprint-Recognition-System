@@ -61,7 +61,7 @@ Then, I established a minimum variance **threshold** to retain only the signific
 To standardize the contour of the fingerprint and eliminate residual noise in the background, I performed several **morphological transformations** on the resulting binary mask. First, I applied a **morphological closing operator** to eliminate remaining gaps within the fingerprint, represented by black pixels, without altering its original contour. Then, I performed an **erosion operation** to remove background noise, represented by white pixels. Knowing that the central point of a fingerprint typically does not extend to its outer edges, the erosion operator also serves to thin the fingerprint contour.
 
 <p align="center">
-  <img src="./readme images/applied_morphological_operators.png" alt="Applied morphological operators" />
+  <img src="./readme images/applied_morphological_operators.png" width="400" alt="Applied morphological operators" />
 
 By overlaying the variance mask obtained after applying all morphological operators over the filtered image presented at the previous step, I produced the final segmented fingerprint image.
 
@@ -191,4 +191,30 @@ To create the database, ensure you have Docker installed. First, create an `.env
 ```
 cd app
 docker-compose build db; docker-compose up db
+```
+
+### Environment File Template
+The `.env` file must contain the following variables:
+- **CONTAINER_NAME**: Name of the container
+- **DB_USER**: Database user
+- **DB_PASSWORD**: Database password
+- **DB_NAME**: Database name
+- **DB_HOST**: Database host (usually: localhost)
+- **DB_PORT**: Database port (default: 5432 for PostgreSQL)
+- **DB_PORT2**: Second database port (if applicable; default: 5432 for PostgreSQL)
+- **PUBLIC_CONTEXT_FILE**: Path to the public context file (for homomorphic encryption)
+- **SECRET_CONTEXT_FILE**: Path to the secret context file (for homomorphic encryption)
+
+```
+CONTAINER_NAME=your_container_name
+DB_USER=your_database_user
+DB_PASSWORD=your_database_password
+DB_NAME=your_database_name
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_PORT2=5432
+
+PUBLIC_CONTEXT_FILE=public.txt
+SECRET_CONTEXT_FILE=secret.txt
 ```
