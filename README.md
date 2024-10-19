@@ -26,9 +26,9 @@ This project presents a biometric system based on **fingerprint recognition** th
 </p>
 
 The presented system uses a well-structured algorithm to extract fingerprint features, transforming each fingerprint image into a compact representation called **FingerCode**. Below is a detailed breakdown of the feature extraction process:
-### 1. Central Point Localization
+### 1. Core Point Detection
 
-The first step is identifying the **central point** of the fingerprint, also known as the **reference point**. In this project, I considered the reference point to be the location of the **maximum curvature of the ridges**. This step is important because the fingerprint features are extracted with respect to this central point. To detect the core point, the following substeps are performed:
+The first step is identifying the **core point** of the fingerprint, also known as the **reference point**. In this project, I considered the reference point to be the location of the **maximum curvature of the ridges**. This step is important because the fingerprint features are extracted with respect to this central point. To detect the core point, the following substeps are performed:
 
 #### Image Preprocessing
 
@@ -61,7 +61,7 @@ Then, I established a minimum variance **threshold** to retain only the signific
 To standardize the contour of the fingerprint and eliminate residual noise in the background, I performed several **morphological transformations** on the resulting binary mask. First, I applied a **morphological closing operator** to eliminate remaining gaps within the fingerprint, represented by black pixels, without altering its original contour. Then, I performed an **erosion operation** to remove background noise, represented by white pixels. Knowing that the central point of a fingerprint typically does not extend to its outer edges, the erosion operator also serves to thin the fingerprint contour.
 
 <p align="center">
-  <img src="./readme images/applied_morphological_operators.png" width="500" alt="Applied morphological operators" />
+  <img src="./readme images/applied_morphological_operators.png" alt="Applied morphological operators" />
 
 By overlaying the variance mask obtained after applying all morphological operators over the filtered image presented at the previous step, I produced the final segmented fingerprint image.
 
