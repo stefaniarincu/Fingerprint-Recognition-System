@@ -61,7 +61,7 @@ Then, I established a minimum variance **threshold** to retain only the signific
 To standardize the contour of the fingerprint and eliminate residual noise in the background, I performed several **morphological transformations** on the resulting binary mask. First, I applied a **morphological closing operator** to eliminate remaining gaps within the fingerprint, represented by black pixels, without altering its original contour. Then, I performed an **erosion operation** to remove background noise, represented by white pixels. Knowing that the central point of a fingerprint typically does not extend to its outer edges, the erosion operator also serves to thin the fingerprint contour.
 
 <p align="center">
-  <img src="./readme images/applied_morphological_operators.png" width="400" alt="Applied morphological operators" />
+  <img src="./readme images/applied_morphological_operators.png" width="500" alt="Applied morphological operators" />
 
 By overlaying the variance mask obtained after applying all morphological operators over the filtered image presented at the previous step, I produced the final segmented fingerprint image.
 
@@ -179,6 +179,34 @@ As seen, the differences between distances from the encrypted and clear domains 
 ## Future Directions
 - Improve fingerprint rotation handling in the feature extraction process.
 - Optimize the reference point detection through machine learning techniques, such as training a linear classifier or other advanced models.
+
+## Demo
+To demonstrate the system’s performance, I used 5 fingerprint images from 5 different individuals. The feature extraction algorithm described above was applied to each image, then the resulting feature vector is encrypted and stored in the database. An additional set of 4 images was retained to test all cases in the system. Currently, the application is in demo mode.
+
+### Usage 
+By running [`app_tkinter.py`](app/website/app_tkinter.py), a window will appear, prompting you to select a fingerprint image. After selection:
+1. The algorithm extracts the fingerprint’s features.
+2. The extracted feature vector is encrypted.
+3. Matching is then performed in the encrypted domain. 
+
+### Test Cases
+1. Match found: If the fingerprint exists in the database, the system will display the matched fingerprint and provide distance measurements for both the real and encrypted domains, demonstrating consistent performance across both.
+
+<p align="center">
+      <img src="./readme images/user_found.png" width="500" alt="Distribution of differences" />
+</p>
+
+2. Fingerprint not found: If the fingerprint is not in the database, an error message will be displayed.
+
+<p align="center">
+      <img src="./readme images/user_not_found.png" width="500" alt="Distribution of differences" />
+</p>
+
+3. Incorrect placement: During feature extraction, if the fingerprint is placed incorrectly, an error message will appear, guiding the user to select another image.
+
+<p align="center">
+      <img src="./readme images/wrong_placement.png" width="500" alt="Distribution of differences" />
+</p>
 
 ## How to run
 To install all required libraries, you can find the Anaconda environment file in `frs.yaml`. Simply download it, import it into Anaconda, and select it as the interpreter when running the project. 
