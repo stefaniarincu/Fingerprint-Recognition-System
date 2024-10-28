@@ -27,15 +27,12 @@ This project presents a biometric system based on **fingerprint recognition** th
 
 The presented system uses a well-structured algorithm to extract fingerprint features, transforming each fingerprint image into a compact representation called **FingerCode**. Below is a detailed breakdown of the feature extraction process:
 ### 1. Core Point Detection
-
 The first step is identifying the **core point** of the fingerprint, also known as the **reference point**. In this project, I considered the reference point to be the location of the **maximum curvature of the ridges**. This step is important because the fingerprint features are extracted with respect to this central point. To detect the core point, the following substeps are performed:
 
 #### Image Preprocessing
-
 To reduce noise and enhance contrast in the fingerprint images, making the patterns clearer, I applied a **Gaussian filter** followed by the **CLAHE algorithm** (Contrast Limited Adaptive Histogram Equalization). These steps are important in preparing the images for feature extraction.
 
 #### Fingerprint Contour Detection
-
 Knowing that a fingerprint is characterized by the uniform pattern of intersecting ridges and valleys, I used the properties of the **gradients** to capture the quick transitions from white (valleys) to black (ridges) within the fingerprint image, highlighting the area of interest. 
 
 <p align="center">
@@ -53,7 +50,6 @@ To determine the contour of the fingerprint, I created a mask equal in size to t
 Finally, I applied a filter in the **frequency domain**, which combines a **Gaussian component** with a **complex component**. This filter is then applied to the fingerprint contour using a **Fourier transform** convolution.
 
 #### Region of Interest Segmentation
-
 To delimitate the region of interest, I divided the original image into non-overlapping blocks of size $L \times L$. Subsequently, I calculated the **variance** of the grayscale tones for each block, highlighting local differences in pixel intensity. This variance calculation aids in detecting areas where ridges intersect with valleys, indicated by numerous transitions from white to black. Areas with high variance appear lighter, closer to white, emphasizing structures with significant details, such as the fingerprint itself.
 
 Then, I established a minimum variance **threshold** to retain only the significant blocks, labeling them with a value of 1 (white) in a binary mask, while the remaining blocks were assigned a value of 0 (black).
@@ -68,13 +64,11 @@ By overlaying the variance mask obtained after applying all morphological operat
 To determine the central point, defined as the point of maximum curvature, I searched for the pixel position with the maximum amplitude.
 
 ### 2. Region of Interest Cropping
-
 Since the algorithm implemented in this project uses only the information from the vicinity of the central point,  retaining the entire image is unnecessary. I defined a variable $l$ representing the side length of a square centered around the reference point ($l$ must be an odd number).
 
 The way the fingerprint is positioned on the scanner's surface during the capture module affects the algorithm's performance. So, if cropping the square of side length $l$ exceeds the height or width of the original image, the system will stop the image processing and display a message indicating the impossibility of extracting the necessary information. 
 
 ### 3. Division into Sectors
-
 Around the reference point detected above, I drew $6$ **concentric circles**. Since the innermost circle around the reference point contains very few pixels, it is not used for extracting distinctive features, the number of bands I used is $n_b = 5$. These circles represent the region of interest from which the **local discriminative information** will be extracted. In the image below, the contours of the sectors are marked with red lines, while the yellow **X** indicates the central point of the fingerprint. The distance between each two circles is $d = 20$, and each circle is divided into $n_r = 16$ regions.
 
 <p align="center">
@@ -88,7 +82,6 @@ $S_i = \lbrace (x, y) \mid d(R_i + 1) \leq \sqrt{(x - x_c)^2 + (y - y_c)^2} < d(
 where $R_i = \left\lfloor \frac{i}{n_r} \right\rfloor$ and $\theta_i = \frac{2\pi}{n_r} \cdot (i \mod n_r)$. Here, $\left\lfloor \frac{i}{n_r} \right\rfloor$ is the integer part of dividing $i$ by $n_r$, and $i \mod n_r$ represents the remainder of this division. Therefore, In this project, I used a total of $S = n_b \cdot n_r = 5 \cdot 16 = 80$ sectors for feature extraction.
 
 ### 4. Normalization
-
 Before applying the set of Gabor filters, I applied a **local normalization technique**, calculating the mean ($M_i$) and variance ($V_i$) of the grayscale levels for each sector $S_i$. I defined a global mean ($M_0=100$) and standard variance ($V_0=100$).
 
 A pixel's intensity in the image, denoted $I(x, y)$, is normalized based on the formula:
@@ -110,7 +103,6 @@ $$
 To prevent errors, the algorithm handles cases where $V_i = 0$ by setting $N_i(x, y) = M_0$. 
 
 ### 5. Gabor Filter Application
-
 I applied **Gabor filters** to each sector of the fingerprint, as they are well-known for their ability to **capture texture information**, such as ridges and valleys in various orientations. In this project, I used $n_f = 8$ Gabor filters, each oriented in a different direction ($\theta_i \in \lbrace 0^\circ, 22.5^\circ, 45^\circ, 67.5^\circ, 90^\circ, 112.5^\circ, 135^\circ, 157.5^\circ \rbrace$). This process results in a series of filtered images that highlight distinct patterns in the fingerprint's structure.
 
 <p align="center">
@@ -118,7 +110,6 @@ I applied **Gabor filters** to each sector of the fingerprint, as they are well-
 </p>
 
 ### 6. Creating the Feature Vector (FingerCode)
-
 For each of the eight filtered images obtained in the previous step, I calculated the **mean absolute deviation from the average grayscale levels**, denoted as $D_i$ for each sector $S_i$. Let $n_{p_i}$ be the number of pixels in sector $S_i$. For each filtered image $Img_f$ and pixel intensity $I_f(x, y)$, the mean absolute deviation is computed as follows:
 
 $$
@@ -193,19 +184,19 @@ By running [`app_tkinter.py`](app/website/app_tkinter.py), a window will appear,
 1. Match found: If the fingerprint exists in the database, the system will display the matched fingerprint and provide distance measurements for both the real and encrypted domains, demonstrating consistent performance across both.
 
 <p align="center">
-      <img src="./readme images/user_found.png" width="500" alt="Distribution of differences" />
+      <img src="./readme images/user_found.png" width="650" alt="Distribution of differences" />
 </p>
 
 2. Fingerprint not found: If the fingerprint is not in the database, an error message will be displayed.
 
 <p align="center">
-      <img src="./readme images/user_not_found.png" width="500" alt="Distribution of differences" />
+      <img src="./readme images/user_not_found.png" width="650" alt="Distribution of differences" />
 </p>
 
 3. Incorrect placement: During feature extraction, if the fingerprint is placed incorrectly, an error message will appear, guiding the user to select another image.
 
 <p align="center">
-      <img src="./readme images/wrong_placement.png" width="500" alt="Distribution of differences" />
+      <img src="./readme images/wrong_placement.png" width="650" alt="Distribution of differences" />
 </p>
 
 ## How to run
@@ -214,7 +205,6 @@ To install all required libraries, you can find the Anaconda environment file in
 Alternatively, iif you prefer not to use Anaconda, you will need to manually install **tenseal**, **opencv**, **numpy**, **python-dotenv**, **tkinter** and **psycopg2**.
 
 ### Database Setup
-
 To create the database, ensure you have Docker installed. First, create an `.env` file and place it inside the `app` folder. Then, run the following commands to set up the database inside a Docker container using the configurations specified in the [`app/docker-compose.yml`](app/docker-compose.yml), [`app/init.sql`](app/init.sql), and `app/.env` files:
 ```
 cd app

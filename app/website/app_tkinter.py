@@ -7,7 +7,7 @@ from RecognitionSystem import FingRecognitionSystem
 class FingerprintRecognitionApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Sistem de recunoaștere pe baza amprentei")
+        self.root.title("Fingerprint Recognition System")
         self.root.state("zoomed")
         
         self.image_frame = tk.Frame(self.root)
@@ -16,7 +16,7 @@ class FingerprintRecognitionApp:
         self.distances_frame = tk.Frame(self.root)
         self.distances_frame.place_forget()
         
-        self.select_btn = tk.Button(self.root, text="Selectați amprenta", font=("Helvetica", 11), command=self.open_image)
+        self.select_btn = tk.Button(self.root, text="Select fingerprint", font=("Helvetica", 11), command=self.open_image)
         self.select_btn.place(relx=0.5, rely=0.3, anchor="center")
         
         self.fing_rec_syst = FingRecognitionSystem()
@@ -34,7 +34,7 @@ class FingerprintRecognitionApp:
             
             self.fing_rec_syst.find_center_point(fingerprint_img)
             self.select_btn.place_forget()
-            self.display_image(self.fing_rec_syst.feature_extractor.center_point_image, self.image_frame, "Centrul evidențiat în amprenta selectată")
+            self.display_image(self.fing_rec_syst.feature_extractor.center_point_image, self.image_frame, "Center highlighted in the selected fingerprint")
             self.root.update()
             
             self.root.after(0, self.get_roi, self.selected_image)
@@ -43,12 +43,12 @@ class FingerprintRecognitionApp:
         self.fing_rec_syst.determine_cropped_roi(image)
 
         if self.fing_rec_syst.cropped_roi.shape[0] != 0:
-            self.display_images(self.fing_rec_syst.feature_extractor.center_point_image, self.fing_rec_syst.feature_extractor.sectors_img, self.image_frame, "Centrul evidențiat în amprenta selectată", "Sectoare evidențiate în amprenta selectată")
+            self.display_images(self.fing_rec_syst.feature_extractor.center_point_image, self.fing_rec_syst.feature_extractor.sectors_img, self.image_frame, "Center highlighted in the selected fingerprint", "Sectors highlighted in the selected fingerprint")
             self.root.update()
 
             self.root.after(0, self.extract_and_match_fingercode)
         else:
-            self.show_error_message("Eroare", "Amprentă plasată incorect! Selectați altă imagine.")
+            self.show_error_message("Error", "Fingerprint placed incorrectly! Please select another image.")
 
     def extract_and_match_fingercode(self):
         self.fing_rec_syst.extract_fingercode_app()
@@ -58,18 +58,18 @@ class FingerprintRecognitionApp:
         match_path, match_fingercodes_image, selected_fingercodes_image, clear_dist, enc_dist = self.fing_rec_syst.match()     
 
         if match_path != '':
-            self.result_label.config(text="Utilizator identificat", fg="green")
+            self.result_label.config(text="User identified", fg="green")
             selected_img = self.selected_image  # Imaginea selectată
             match_img = cv.imread(match_path, cv.IMREAD_GRAYSCALE)  # Imaginea găsită
 
             #self.display_images( "Amprenta selectată", "Amprenta găsită în baza de date")
-            self.display_final_result(selected_img, match_img, selected_fingercodes_image, match_fingercodes_image, self.image_frame, "Amprenta selectată", "Amprenta găsită în baza de date")
+            self.display_final_result(selected_img, match_img, selected_fingercodes_image, match_fingercodes_image, self.image_frame, "Selected fingerprint", "Fingerprint found in the database")
             self.display_distances(clear_dist, enc_dist)
 
-            self.reset_btn = tk.Button(self.root, text="Resetați", font=("Helvetica", 11), command=self.reset_interface)
+            self.reset_btn = tk.Button(self.root, text="Reset", font=("Helvetica", 11), command=self.reset_interface)
             self.reset_btn.place(relx=0.5, rely=0.9, anchor="center")
         else:
-            self.show_error_message("Eroare", "Utilizatorul nu este înregistrat în baza de date!")
+            self.show_error_message("Error", "User not registered in the database!")
 
     def show_error_message(self, title, message):
         messagebox.showerror(title, message)
@@ -145,13 +145,13 @@ class FingerprintRecognitionApp:
     def display_distances(self, clear_distance, encrypted_distance):
         self.distances_frame.place(relx=0.5, rely=0.32, anchor="center")
         
-        clear_distance_label = tk.Label(self.distances_frame, text=f"   Distanța în domeniul clar:  {clear_distance:.3f}", font=("Helvetica", 14), fg='black')
+        clear_distance_label = tk.Label(self.distances_frame, text=f"        Clear domain distance: {clear_distance:.3f}", font=("Helvetica", 14), fg='black')
         clear_distance_label.pack()
         
-        encrypted_distance_label = tk.Label(self.distances_frame, text=f"Distanța în domeniul criptat: {encrypted_distance:.3f}", font=("Helvetica", 14), fg='black')
+        encrypted_distance_label = tk.Label(self.distances_frame, text=f"Encrypted domain distance: {encrypted_distance:.3f}", font=("Helvetica", 14), fg='black')
         encrypted_distance_label.pack() 
 
-        diff_label = tk.Label(self.distances_frame, text=f"\nDiferența dintre distanțe: {(encrypted_distance - clear_distance):.3f}", font=("Helvetica", 14), fg='black')
+        diff_label = tk.Label(self.distances_frame, text=f"\nDifference between distances: {(encrypted_distance - clear_distance):.3f}", font=("Helvetica", 14), fg='black')
         diff_label.pack() 
 
     def reset_interface(self):
